@@ -15,17 +15,18 @@
 
 ### Software
 
-| Name     | Version |                          Link                           |
-| :------- | :------ | :-----------------------------------------------------: |
-| Godot    | 4.2.1   |      [Download](https://godotengine.org/download)       |
-| VSCode   | 1.68+   |   [Download](https://code.visualstudio.com/download)    |
-| .NET SDK | 6+      | [Download](https://dotnet.microsoft.com/en-us/download) |
+| Name       | Version |                          Link                           |
+| :--------- | :------ | :-----------------------------------------------------: |
+| Godot Mono | 4.2.1   |      [Download](https://godotengine.org/download)       |
+| VSCode     | 1.68+   |   [Download](https://code.visualstudio.com/download)    |
+| .NET SDK   | 6+      | [Download](https://dotnet.microsoft.com/en-us/download) |
 
 ### Reading
 
-| Source              |                      Link                       |
-| :------------------ | :---------------------------------------------: |
-| Godot Documentation | [View](https://docs.godotengine.org/en/stable/) |
+| Source                 |                                              Link                                              |
+| :--------------------- | :--------------------------------------------------------------------------------------------: |
+| Godot Documentation    |                        [View](https://docs.godotengine.org/en/stable/)                         |
+| Godot C# Documentation | [View](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_basics.html) |
 
 ---
 
@@ -110,7 +111,7 @@ This template comes with 3 helper nodes to assist with managing a mix of 3D and 
 - Use UTF-8 encoding without a byte order mark.
 - Use 4 spaces instead of tabs for indentation.
 
-See the [Godot Style Guide](https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/gdscript_styleguide.html) for a full breakdown.
+See the [Godot Style Guide](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_style_guide.html) for a full breakdown.
 
 | Name                        | Rule                                                                             | Example                                         |
 | :-------------------------- | :------------------------------------------------------------------------------- | :---------------------------------------------- |
