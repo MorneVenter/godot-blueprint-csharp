@@ -109,7 +109,7 @@ This template comes with 3 helper nodes to assist with managing a mix of 3D and 
 - Use line feed (LF) characters to break lines, not CRLF or CR.
 - Use one line feed character at the end of each file.
 - Use UTF-8 encoding without a byte order mark.
-- Use 4 spaces instead of tabs for indentation.
+- Use spaces instead of tabs for indentation.
 
 See the [Godot Style Guide](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_style_guide.html) for a full breakdown.
 

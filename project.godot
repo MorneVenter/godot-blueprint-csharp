@@ -20,6 +20,10 @@ boot_splash/bg_color=Color(0, 0, 0, 1)
 boot_splash/image="res://ExternalAssets/Sprites/Logos/godot_logo.png"
 config/icon="res://icon.png"
 
+[autoload]
+
+EventManager="*res://Assets/Scripts/Managers/EventManager.cs"
+
 [display]
 
 window/size/viewport_width=1920

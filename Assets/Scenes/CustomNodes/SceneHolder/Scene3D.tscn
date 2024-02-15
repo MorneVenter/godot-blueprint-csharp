@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cabvcqnuggm0i"]
 
-[ext_resource type="Script" path="res://assets/scenes/custom-nodes/scene-holder/scene_3d.gd" id="1_ajuv3"]
+[ext_resource type="Script" path="res://Assets/Scenes/CustomNodes/SceneHolder/Scene3D.cs" id="1_6x5ly"]
 
 [node name="Scene3D" type="SubViewport"]
 handle_input_locally = false
@@ -8,4 +8,4 @@ audio_listener_enable_2d = true
 audio_listener_enable_3d = true
 size = Vector2i(1920, 1080)
 render_target_update_mode = 4
-script = ExtResource("1_ajuv3")
+script = ExtResource("1_6x5ly")

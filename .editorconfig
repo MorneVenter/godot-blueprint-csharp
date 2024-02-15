@@ -1,0 +1,12 @@
+root = true
+
+# All Files
+[*]
+indent_style = space
+
+[*.sln]
+indent_style = tab
+
+[*.cs]
+dotnet_diagnostic.IDE0008.severity = none
+dotnet_diagnostic.IDE0058.severity = none
