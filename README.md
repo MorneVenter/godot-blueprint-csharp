@@ -30,14 +30,19 @@
 
 ---
 
-## Utility Scripts 
+## Utility Scripts
 
 This project includes a few utility scripts. Feel free to delete them if they are not needed. These scripts are:
 
 - PrettyNumbers - A static class used to format numbers.
 - SaveManager - A singleton save system. Call `this.GetSaveManager()` in any class to get the instance. You can then use functions like `Get()` and `Mutate()` to interact with the save system.
-- EventManager- A singleton event system. Call `this.GetEventManager()` in any class to get the instance. You can then use the public events to emit and subscribe to global signals. 
+- EventManager- A singleton event system. Call `this.GetEventManager()` in any class to get the instance. You can then use the public events to emit and subscribe to global signals.
 
+Signals from the event manager can be emitted like so: `eventManager.EmitSignal(nameof(eventManager.ExampleSignal));`. The name of the event is passed instead of magic strings. To listen to a signal, simply do: `eventManager.MySignal += func`.
+
+## Tests
+
+Write and put your tests in `Assets/Tests`. This template uses NUnit to run tests. Run `dotnet test` to run your tests.
 
 ## 3D and 2D Scenes
 
