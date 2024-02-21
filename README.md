@@ -110,6 +110,7 @@ This template comes with 3 helper nodes to assist with managing a mix of 3D and 
 | Fonts             | Store all font resources here.                                                                                         |
 | Scenes            | Store all scenes here.                                                                                                 |
 | Scripts           | Store all scripts here.                                                                                                |
+| Tests             | Store all tests here.                                                                                                  |
 | Scripts/Editor    | For Editor specific scripts.                                                                                           |
 | Scripts/Managers  | For singleton scripts used in Auto Loading.                                                                            |
 | Scripts/Utilities | For utilty scripts used across the project.                                                                            |
