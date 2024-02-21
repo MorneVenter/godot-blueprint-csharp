@@ -25,6 +25,10 @@ config/icon="res://icon.png"
 EventManager="*res://Assets/Scripts/Managers/EventManager.cs"
 SaveManager="*res://Assets/Scripts/Managers/SaveManager.cs"
 
+[debug]
+
+shader_language/warnings/treat_warnings_as_errors=true
+
 [display]
 
 window/size/viewport_width=1920

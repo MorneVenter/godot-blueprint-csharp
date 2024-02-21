@@ -30,6 +30,15 @@
 
 ---
 
+## Utility Scripts 
+
+This project includes a few utility scripts. Feel free to delete them if they are not needed. These scripts are:
+
+- PrettyNumbers - A static class used to format numbers.
+- SaveManager - A singleton save system. Call `this.GetSaveManager()` in any class to get the instance. You can then use functions like `Get()` and `Mutate()` to interact with the save system.
+- EventManager- A singleton event system. Call `this.GetEventManager()` in any class to get the instance. You can then use the public events to emit and subscribe to global signals. 
+
+
 ## 3D and 2D Scenes
 
 This template comes with 3 helper nodes to assist with managing a mix of 3D and 2D scenes (i.e. 3D world and 2D UI). This will allow you to implement a 1920x1080 UI, but render your 3D world at a lower resolution (or use FSR).
