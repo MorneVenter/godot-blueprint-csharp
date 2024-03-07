@@ -70,6 +70,7 @@ This template comes with 3 helper nodes to assist with managing a mix of 3D and 
    |-- Sprites
    |-- Models
    |-- Materials
+   |-- Resources
    |-- Shaders
    |   |-- Canvas
    |   |-- Spatial
@@ -84,7 +85,6 @@ This template comes with 3 helper nodes to assist with managing a mix of 3D and 
    |   |-- Entities
    |   |-- Managers
    |   |-- Utilities
-   |   |-- Resources
    |   |-- Other
    |-- Tests
 |-- ExternalAssets
@@ -107,6 +107,7 @@ This template comes with 3 helper nodes to assist with managing a mix of 3D and 
 | Models            | Store all 3D models here.                                                                                              |
 | Materials         | Store all materials here.                                                                                              |
 | Shaders           | Store all spatial, canvas or particle shaders here.                                                                    |
+| Resources         | Instances of DataObjects or other Godot resources.                                                                     |
 | Fonts             | Store all font resources here.                                                                                         |
 | Scenes            | Store all scenes here.                                                                                                 |
 | Scripts           | Store all scripts here.                                                                                                |
@@ -114,7 +115,6 @@ This template comes with 3 helper nodes to assist with managing a mix of 3D and 
 | Scripts/Editor    | For Editor specific scripts.                                                                                           |
 | Scripts/Managers  | For singleton scripts used in Auto Loading.                                                                            |
 | Scripts/Utilities | For utilty scripts used across the project.                                                                            |
-| Scripts/Resources | Instances of DataObjects or other Godot resources.                                                                     |
 | ExternalAssets    | This is a reflection of the Assets folder, but meant for external assets you want to keep seperate from your project . |
 
 ---
