@@ -19,7 +19,7 @@
 | :--------- | :------ | :-----------------------------------------------------: |
 | Godot Mono | 4.7.2   |      [Download](https://godotengine.org/download)       |
 | Zed        | 1.0+    |          [Download](https://zed.dev/download)           |
-| .NET SDK   | 6+      | [Download](https://dotnet.microsoft.com/en-us/download) |
+| .NET SDK   | 10.0    | [Download](https://dotnet.microsoft.com/en-us/download) |
 
 ### Reading
 
@@ -58,7 +58,7 @@ This projects includes a few custom settings added in the Project Settings under
 
 ## Tests
 
-Write and put your tests in `Assets/Tests`. This template uses NUnit to run tests. Run `dotnet test` to run your tests.
+Write and put your tests in `./tests`. This template uses NUnit to run tests. Run `dotnet test` to run your tests.
 
 ## Conventions
 
