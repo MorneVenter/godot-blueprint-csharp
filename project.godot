@@ -11,19 +11,25 @@ config_version=5
 [application]
 
 config/name="Godot Blueprint C#"
-config/version="0.0.1"
-config/tags=PackedStringArray("4.2", "template")
+config/tags=PackedStringArray("template")
 run/main_scene="res://Main.tscn"
-config/features=PackedStringArray("4.2", "C#", "Forward Plus")
+config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 run/max_fps=60
 boot_splash/bg_color=Color(0, 0, 0, 1)
-boot_splash/image="res://ExternalAssets/Sprites/Logos/godot_logo.png"
+boot_splash/image="uid://dgq0o6xp228ku"
 config/icon="res://icon.png"
 
 [autoload]
 
-EventManager="*res://Assets/Scripts/Managers/EventManager.cs"
-SaveManager="*res://Assets/Scripts/Managers/SaveManager.cs"
+SaveManager="*uid://bdnqffmwjqxv6"
+UIHolder="*uid://bfuxw4hbg6obr"
+FPSCounter="*uid://c8aqvyxkb2mx6"
+SignalBus="*uid://df5aal2e3djlm"
+
+[blueprint]
+
+save_manager/saves/save_encryption_key="save_encryption_key"
+debug/performance/show_fps_counter=true
 
 [debug]
 
@@ -34,16 +40,42 @@ shader_language/warnings/treat_warnings_as_errors=true
 window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/size/initial_position_type=3
-window/size/window_width_override=1280
-window/size/window_height_override=720
 window/stretch/mode="canvas_items"
-window/dpi/allow_hidpi=false
 
 [dotnet]
 
 project/assembly_name="Project"
 
+[editor]
+
+script_templates_search_path="res://.script_templates"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/Blueprint/plugin.cfg")
+
+[file_customization]
+
+folder_colors={
+"res://addons/": "green",
+"res://assets/": "orange",
+"res://core/": "purple",
+"res://external/": "gray",
+"res://game/": "blue",
+"res://tests/": "red"
+}
+
 [filesystem]
 
+import/fbx2gltf/enabled=false
 import/blender/enabled=false
 import/fbx/enabled=false
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+common/enable_pause_aware_picking=true
+
+[rendering]
+
+environment/default_environment="res://default_env.tres"

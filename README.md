@@ -17,8 +17,8 @@
 
 | Name       | Version |                          Link                           |
 | :--------- | :------ | :-----------------------------------------------------: |
-| Godot Mono | 4.2.1   |      [Download](https://godotengine.org/download)       |
-| VSCode     | 1.68+   |   [Download](https://code.visualstudio.com/download)    |
+| Godot Mono | 4.7.2   |      [Download](https://godotengine.org/download)       |
+| Zed        | 1.0+    |          [Download](https://zed.dev/download)           |
 | .NET SDK   | 6+      | [Download](https://dotnet.microsoft.com/en-us/download) |
 
 ### Reading
@@ -35,89 +35,30 @@
 This project includes a few utility scripts. Feel free to delete them if they are not needed. These scripts are:
 
 - PrettyNumbers - A static class used to format numbers.
-- SaveManager - A singleton save system. Call `this.GetSaveManager()` in any class to get the instance. You can then use functions like `Get()` and `Mutate()` to interact with the save system.
-- EventManager- A singleton event system. Call `this.GetEventManager()` in any class to get the instance. You can then use the public events to emit and subscribe to global signals.
+- SaveManager - A singleton save system.
+- SignalBus - A shared signal bus.
 
-Signals from the event manager can be emitted like so: `eventManager.EmitSignal(nameof(eventManager.ExampleSignal));`. The name of the event is passed instead of magic strings. To listen to a signal, simply do: `eventManager.MySignal += func`.
+Signals from the signal bus can be emitted like so: `SignalBus.EmitSignal(nameof(SignalBus.MySignal));`. The name of the event is passed instead of magic strings. To listen to a signal, simply do: `SignalBus.MySignal += func`.
+
+## UI Holder Pattern
+
+This project includes a top-level UI manager component: UIHolder. Simply use the `UIHolder.Add` and `UIHolder.Remove` to add and remove Control nodes.
+Note: removing a Control node frees it from the scene tree.
+
+When adding a Control node via the UIHolder, a UI layer is required. This can be found and changed in `UIHolder`. Control nodes will be ordered according to this enum, with higher values in the front.
+
+Example: `UIHolder.Add(ui, UIHolder.UILayers.WORLD)`.
+
+## Custom Settings
+
+This projects includes a few custom settings added in the Project Settings under the "Blueprint" section:
+
+- Save File Encryption Key: encryption key used to store save data.
+- Show FPS Counter: Toggle on to show an FPS counter. Can also be turned on/off in code via `FPSCounter.Toggle(bool)`. This is on by default.
 
 ## Tests
 
 Write and put your tests in `Assets/Tests`. This template uses NUnit to run tests. Run `dotnet test` to run your tests.
-
-## 3D and 2D Scenes
-
-This template comes with 3 helper nodes to assist with managing a mix of 3D and 2D scenes (i.e. 3D world and 2D UI). This will allow you to implement a 1920x1080 UI, but render your 3D world at a lower resolution (or use FSR).
-
-- SceneHolder: The main viewport for your scenes. Scene2D/3D should be children of this node.
-- Scene3D: Holds Node3D objects. A Scene3D should always be places before a Scene2D to allow overlays.
-- Scene2D: Holds Node2D objects. A Scene2D should always be places after a Scene3D to allow overlays.
-
-```
-|-- SceneHolder
-   |-- Scene3D
-   |-- Scene2D
-```
-
-## Folder Structure
-
-```
-|-- Addons
-|-- Assets
-   |-- Editor
-   |-- Media
-   |   |-- Audio
-   |   |-- Video
-   |-- Sprites
-   |-- Models
-   |-- Materials
-   |-- Resources
-   |-- Shaders
-   |   |-- Canvas
-   |   |-- Spatial
-   |   |-- Particle
-   |-- Fonts
-   |-- Scenes
-   |   |-- Levels
-   |   |-- Characters
-   |   |-- Other
-   |-- Scripts
-   |   |-- Editor
-   |   |-- Entities
-   |   |-- Managers
-   |   |-- Utilities
-   |   |-- Other
-   |-- Tests
-|-- ExternalAssets
-   |-- Media
-   |   |-- Audio
-   |   |-- Video
-   |-- Sprites
-   |-- Models
-   |-- Materials
-   |-- Shaders
-   |-- Fonts
-   |-- Scripts
-```
-
-| Folder            | Description                                                                                                            |
-| :---------------- | :--------------------------------------------------------------------------------------------------------------------- |
-| Addons            | Store all addons/plugins in this folder.                                                                               |
-| Media             | Store all audio and video files here.                                                                                  |
-| Sprites           | Store all 2D sprites here.                                                                                             |
-| Models            | Store all 3D models here.                                                                                              |
-| Materials         | Store all materials here.                                                                                              |
-| Shaders           | Store all spatial, canvas or particle shaders here.                                                                    |
-| Resources         | Instances of DataObjects or other Godot resources.                                                                     |
-| Fonts             | Store all font resources here.                                                                                         |
-| Scenes            | Store all scenes here.                                                                                                 |
-| Scripts           | Store all scripts here.                                                                                                |
-| Tests             | Store all tests here.                                                                                                  |
-| Scripts/Editor    | For Editor specific scripts.                                                                                           |
-| Scripts/Managers  | For singleton scripts used in Auto Loading.                                                                            |
-| Scripts/Utilities | For utilty scripts used across the project.                                                                            |
-| ExternalAssets    | This is a reflection of the Assets folder, but meant for external assets you want to keep seperate from your project . |
-
----
 
 ## Conventions
 
@@ -144,34 +85,3 @@ See the [Godot Style Guide](https://docs.godotengine.org/en/stable/tutorials/scr
 | No magic numbers or strings | Do not use magic variables, rather define them as constant in a single location. | -                                               |
 
 ---
-
-## Commit Structure
-
-Please follow the Conventional Commits standards as well as squashing your commits into a single commit.
-
-Specification can be found at [www.conventionalcommits.org](https://www.conventionalcommits.org/en).
-
-How to squash commits: [https://www.git-tower.com/learn/git/faq/git-squash](https://www.git-tower.com/learn/git/faq/git-squash)
-
-Commits should be in the following form: **type[optional scope]: description**. Examples include:
-
-> feat: allow provided config object to extend other configs
-
-> feat(api)!: send an email to the customer when a product is shipped
-
-> docs: correct spelling of CHANGELOG
-
-|       Type        | Title                    | Emoji | Release | Description                                                                                                 |
-| :---------------: | ------------------------ | :---: | :-----: | ----------------------------------------------------------------------------------------------------------- |
-|      `feat`       | Features                 |  ✨   | `minor` | A new feature                                                                                               |
-|    `refactor`     | Code Refactoring         |  📦   | `patch` | A code change that neither fixes a bug nor adds a feature                                                   |
-|      `perf`       | Performance Improvements |  🚀   | `patch` | A code change that improves performance                                                                     |
-|       `fix`       | Bug Fixes                |  🐛   | `patch` | A bug Fix                                                                                                   |
-|      `chore`      | Chores                   |  ♻   | `patch` | Other changes that don't modify src or test files                                                           |
-|     `revert`      | Reverts                  |  🗑   | `patch` | Reverts a previous commit                                                                                   |
-|      `docs`       | Documentation            |  📚   | `patch` | Documentation only changes                                                                                  |
-|      `style`      | Styles                   |  💎   |    -    | Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)      |
-|      `test`       | Tests                    |  🚨   |    -    | Adding missing tests or correcting existing tests                                                           |
-|      `build`      | Builds                   |  🛠   | `patch` | Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)         |
-|       `ci`        | Continuous Integrations  |  ⚙   |    -    | Changes to our CI configuration files and scripts (example scopes: Travis, Circle, BrowserStack, SauceLabs) |
-| `BREAKING CHANGE` | Breaking Change          |  💔   | `major` | When a breaking change occurs on the commit. Rather use the "!" operator in conjunction with a type.        |

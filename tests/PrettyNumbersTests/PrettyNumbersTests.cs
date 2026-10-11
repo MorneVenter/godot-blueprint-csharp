@@ -1,7 +1,6 @@
 using NUnit.Framework;
-using Project.Assets.Scripts.Utilities;
 
-namespace Project.Assets.Tests.PrettyNumbersTests
+namespace Tests.PrettyNumbersTests
 {
     [TestFixture]
     public class PrettyNumbersTests

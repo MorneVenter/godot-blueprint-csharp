@@ -1,0 +1,3 @@
+{
+  "file_scan_exclusions": ["**/.git", "**/.DS_Store", "**.import", "**/.godot", "**/.import"],
+}
