@@ -78,7 +78,7 @@ See the [Godot Style Guide](https://docs.godotengine.org/en/stable/tutorials/scr
 | Signals                     | Use pascal case.                                                                 | `public delegate void MySignalEventHandler();`  |
 | Constants                   | Use upper snake case.                                                            | `public const int MY_CONST;`                    |
 | Enums                       | Use pascal case.                                                                 | `public enum MyEnum`                            |
-| Folders                     | Use pascal case.                                                                 | `FolderNameHere`                                |
+| Folders                     | Use snake case.                                                                  | `folder_name_here`                              |
 | CS Files                    | Use pascal case. Class name should match file name.                              | `FileName.cs` and `public FileName`             |
 | Classes                     | Use pascal case.                                                                 | `public MyClass`                                |
 | Max Parameters              | A method should not have more than 5 parameters.                                 | -                                               |

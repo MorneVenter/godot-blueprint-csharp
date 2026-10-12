@@ -10,9 +10,9 @@ public partial class Blueprint : EditorPlugin
     private const string UiHolderSingletonName = "UIHolder";
     private const string FpsCounterSingletonName = "FPSCounter";
 
-    private const string SaveManagerPath = "res://addons/Blueprint/Autoloads/SaveManager.cs";
-    private const string UiHolderPath = "res://addons/Blueprint/Autoloads/UIHolder.cs";
-    private const string FpsCounterPath = "res://addons/Blueprint/Autoloads/FpsCounter.cs";
+    private const string SaveManagerPath = "res://addons/blueprint/autoloads/SaveManager.cs";
+    private const string UiHolderPath = "res://addons/blueprint/autoloads/UIHolder.cs";
+    private const string FpsCounterPath = "res://addons/blueprint/autoloads/FpsCounter.cs";
 
     public override void _EnterTree()
     {
