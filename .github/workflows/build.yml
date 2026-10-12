@@ -7,8 +7,8 @@ on:
     branches: ["main"]
 
 jobs:
-  gdlint:
-    name: Lint
+  build:
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
