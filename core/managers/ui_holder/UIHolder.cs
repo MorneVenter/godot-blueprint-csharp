@@ -1,4 +1,4 @@
-namespace Blueprint;
+namespace Game.Core.Managers.UIHolder;
 
 public partial class UIHolder : Control
 {

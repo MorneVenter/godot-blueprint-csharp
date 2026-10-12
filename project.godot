@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Godot Blueprint C#"
 config/tags=PackedStringArray("template")
-run/main_scene="res://Main.tscn"
+run/main_scene="uid://gfyfq0xsq0ak"
 config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 run/max_fps=60
 boot_splash/bg_color=Color(0, 0, 0, 1)
@@ -21,15 +21,10 @@ config/icon="res://icon.png"
 
 [autoload]
 
-SaveManager="*uid://bdnqffmwjqxv6"
-UIHolder="*uid://bfuxw4hbg6obr"
-FPSCounter="*uid://c8aqvyxkb2mx6"
+FpsCounter="*uid://c5uyymg5ddoce"
+SaveManager="*uid://utwfaywa0i1"
 SignalBus="*uid://df5aal2e3djlm"
-
-[blueprint]
-
-save_manager/saves/save_encryption_key="save_encryption_key"
-debug/performance/show_fps_counter=true
+UiHolder="*uid://bqyskvc28oyhb"
 
 [debug]
 
@@ -44,7 +39,8 @@ window/stretch/mode="canvas_items"
 
 [dotnet]
 
-project/assembly_name="Project"
+project/assembly_name="Game"
+project/solution_directory="."
 
 [editor]
 
@@ -52,16 +48,15 @@ script_templates_search_path="res://.script_templates"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/blueprint/plugin.cfg")
+enabled=PackedStringArray()
 
 [file_customization]
 
 folder_colors={
-"res://addons/": "green",
-"res://assets/": "orange",
-"res://core/": "purple",
-"res://external/": "gray",
-"res://game/": "blue",
+"res://assets/": "green",
+"res://assets/external/": "gray",
+"res://core/": "blue",
+"res://scenes/": "pink",
 "res://tests/": "red"
 }
 

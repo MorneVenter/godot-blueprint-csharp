@@ -1,4 +1,4 @@
-namespace Blueprint;
+namespace Game.Core.Managers.FpsCounter;
 
 public partial class FpsCounter : Control
 {
@@ -7,7 +7,7 @@ public partial class FpsCounter : Control
 
     public override void _Ready()
     {
-        _enabled = ProjectSettings.GetSetting(Blueprint.FpsCounterSetting).As<bool>();
+        _enabled = this.GetConfig().ShowFPS;
         ProcessMode = ProcessModeEnum.Always;
 
         if (_enabled)

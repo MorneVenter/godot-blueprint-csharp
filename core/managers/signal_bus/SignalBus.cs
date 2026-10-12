@@ -1,4 +1,4 @@
-namespace Core.Events;
+namespace Game.Core.Managers.SignalBus;
 
 public partial class SignalBus : Node
 {

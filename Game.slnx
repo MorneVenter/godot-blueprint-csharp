@@ -4,5 +4,5 @@
     <BuildType Name="ExportDebug" />
     <BuildType Name="ExportRelease" />
   </Configurations>
-  <Project Path="Project.csproj" />
+  <Project Path="Game.csproj" DefaultStartup="true" />
 </Solution>

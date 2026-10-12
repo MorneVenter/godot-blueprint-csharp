@@ -1,4 +1,4 @@
-namespace Blueprint;
+namespace Game.Core.Utilities;
 
 public static class RotationHelper
 {

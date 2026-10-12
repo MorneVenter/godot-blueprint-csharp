@@ -1,6 +1,8 @@
-using Core.Events;
+using Game.Core.Managers.SaveManager;
+using Game.Core.Managers.SignalBus;
+using Game.Core.Managers.UIHolder;
 
-namespace Core.Extensions;
+namespace Game.Core.Extensions.AutoloadExtension;
 
 public static class AutoLoadExtension
 {

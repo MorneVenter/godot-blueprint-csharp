@@ -1,6 +1,7 @@
 using System.Globalization;
+using FileAccess = Godot.FileAccess;
 
-namespace Blueprint;
+namespace Game.Core.Managers.SaveManager;
 
 public partial class SaveManager : Node
 {
@@ -17,7 +18,7 @@ public partial class SaveManager : Node
 
     public override void _EnterTree()
     {
-        _key = ProjectSettings.GetSetting(Blueprint.EncryptionKeySetting).As<string>();
+        _key = this.GetConfig().SaveFileEncryptionKey;
         LoadSaveData();
     }
 
