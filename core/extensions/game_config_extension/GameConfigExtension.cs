@@ -1,4 +1,4 @@
-using Game.Core.Config.GameConfig;
+using Game.Core.Configuration.GameConfig;
 
 namespace Game.Core.Extensions.GameConfigExtension;
 

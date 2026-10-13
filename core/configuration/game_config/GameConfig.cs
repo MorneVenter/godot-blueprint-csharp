@@ -1,4 +1,4 @@
-namespace Game.Core.Config.GameConfig;
+namespace Game.Core.Configuration.GameConfig;
 
 [GlobalClass]
 public partial class GameConfig : Resource
