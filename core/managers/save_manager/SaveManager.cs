@@ -1,133 +1,53 @@
-using System.Globalization;
-using Godot.Collections;
-using FileAccess = Godot.FileAccess;
+using Game.Core.Data.Save;
+using Game.Core.Managers.SaveManager.Storage;
+using Game.Core.Managers.SaveManager.Storage.FileSystem;
+using Game.Core.Managers.SaveManager.Store;
 
 namespace Game.Core.Managers.SaveManager;
 
+/// <summary>
+/// Autoload exposing <see cref="SaveStore"/> backed by encrypted files.
+/// </summary>
 public partial class SaveManager : Node
 {
-    private const string UserFolder = "user://";
-    private const string SaveFolder = "savedata";
-    private const string DateKey = "LAST_WRITE_DATE_TIME";
     private const int DefaultSlot = 1;
 
-    private string _key = string.Empty;
-    private int? _slot;
-    private Dictionary _data = [];
+    private SaveStore? _store;
+
+    public int? Slot => Store.Slot;
+
+    public SaveData Data => Store.Data;
+
+    public DateTimeOffset? LastWriteTime => Store.LastWriteTime;
+
+    private SaveStore Store =>
+        _store ?? throw new InvalidOperationException("SaveManager has not entered the tree.");
 
     public override void _EnterTree()
     {
-        _key = this.GetConfig().SaveFileEncryptionKey;
+        var fileSystem = new GodotEncryptedFileSystem(this.GetConfig().SaveFileEncryptionKey);
+        _store = new SaveStore(new FileSaveStorage(fileSystem), TimeProvider.System);
         LoadSave(DefaultSlot);
     }
 
-    private static string GetSavePath(int slot) =>
-        $"{UserFolder}{SaveFolder}/save_{slot.ToString("D3", CultureInfo.InvariantCulture)}.save";
+    public bool SaveExists(int slot) => Store.SaveExists(slot);
 
-    private void CreateSaveIfNotExists(string path)
+    /// <inheritdoc cref="SaveStore.LoadSave"/>
+    public SaveLoadResult LoadSave(int slot)
     {
-        if (FileAccess.FileExists(path))
-            return;
+        var result = Store.LoadSave(slot);
 
-        using var directory =
-            DirAccess.Open(UserFolder)
-            ?? throw new IOException($"Could not open save directory: {UserFolder}");
-
-        var directoryError = directory.MakeDirRecursive(SaveFolder);
-
-        if (directoryError != Error.Ok)
-            throw new IOException(
-                $"Could not create save directory '{SaveFolder}': {directoryError}"
+        if (result == SaveLoadResult.BrokenSetAside)
+            GD.PushWarning(
+                $"Save slot {slot} was unreadable; set aside as *_BROKEN_* and started empty."
             );
 
-        WriteSaveFile(path, []);
+        return result;
     }
 
-    private void WriteSaveFile(string path, Dictionary data)
-    {
-        using var saveFile =
-            FileAccess.OpenEncryptedWithPass(path, FileAccess.ModeFlags.Write, _key)
-            ?? throw new IOException($"Could not write save file '{path}'.");
+    /// <inheritdoc cref="SaveStore.Save"/>
+    public void Save() => Store.Save();
 
-        saveFile.StoreVar(data);
-    }
-
-    private Dictionary ReadSaveFile(string path)
-    {
-        using var saveFile =
-            FileAccess.OpenEncryptedWithPass(path, FileAccess.ModeFlags.Read, _key)
-            ?? throw new IOException(
-                $"Could not open save file '{path}'. The encryption key may be invalid."
-            );
-
-        var loadedData = saveFile.GetVar();
-
-        if (loadedData.VariantType != Variant.Type.Dictionary)
-            throw new InvalidDataException($"Save file contains invalid data: {path}");
-
-        return loadedData.AsGodotDictionary();
-    }
-
-    /// <summary>
-    /// Loads a save slot, creating the save file if it does not exist.
-    /// </summary>
-    public void LoadSave(int slot)
-    {
-        var savePath = GetSavePath(slot);
-        CreateSaveIfNotExists(savePath);
-
-        _data = ReadSaveFile(savePath);
-        _slot = slot;
-    }
-
-    /// <summary>
-    /// Deletes a save slot. Deleting the loaded slot unloads it: call LoadSave before saving again.
-    /// </summary>
-    public void DeleteSave(int slot)
-    {
-        var savePath = GetSavePath(slot);
-        var error = DirAccess.RemoveAbsolute(ProjectSettings.GlobalizePath(savePath));
-
-        if (error != Error.Ok && error != Error.FileNotFound)
-            throw new IOException($"Could not delete save file '{savePath}': {error}");
-
-        if (slot != _slot)
-            return;
-
-        _slot = null;
-        _data = [];
-    }
-
-    /// <summary>
-    /// Saves a value and writes the slot to disk. Nil values are ignored.
-    /// </summary>
-    public void SaveValue(string key, Variant value)
-    {
-        if (value.VariantType == Variant.Type.Nil)
-            return;
-
-        var slot =
-            _slot
-            ?? throw new InvalidOperationException("No save slot loaded. Call LoadSave first.");
-
-        _data[key] = value;
-        _data[DateKey] = Time.GetDatetimeStringFromSystem();
-        WriteSaveFile(GetSavePath(slot), _data);
-    }
-
-    /// <summary>
-    /// Loads a value by key, returning the default when missing or nil.
-    /// </summary>
-    public Variant LoadValue(string key, Variant defaultValue = default)
-    {
-        if (!_data.TryGetValue(key, out var value))
-            return defaultValue;
-
-        return value.VariantType == Variant.Type.Nil ? defaultValue : value;
-    }
-
-    /// <summary>
-    /// Gets the last-write timestamp (YYYY-MM-DDTHH:MM:SS), or an empty string if the slot was never written.
-    /// </summary>
-    public string GetLastWriteDate() => LoadValue(DateKey, string.Empty).As<string>();
+    /// <inheritdoc cref="SaveStore.DeleteSave"/>
+    public void DeleteSave(int slot) => Store.DeleteSave(slot);
 }

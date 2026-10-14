@@ -104,6 +104,7 @@ npm run export -- "macOS" builds/macos/MyGame.zip --debug
 | `scenes/`                  | Scenes and their scripts, grouped by feature. `Main.tscn` is the entry. |
 | `core/managers/`           | Autoloads (global singletons).                                          |
 | `core/configuration/`      | `GameConfig` (project settings) and `GameLocale`.                       |
+| `core/data/`               | Plain data classes: `save/SaveData.cs` and a folder per save section.   |
 | `core/extensions/`         | Extension methods that give any node access to config and autoloads.    |
 | `core/resources/`          | Custom `Resource` types.                                                |
 | `core/utilities/`          | Static helpers.                                                         |
@@ -123,11 +124,11 @@ Empty folders contain a `.gitkeep` so Git keeps them; delete it once the folder 
 
 All of these are autoloads registered in `project.godot`. Reach them from any node through an extension method:
 
-| Autoload      | Access                  | Purpose                                                          |
-| :------------ | :---------------------- | :--------------------------------------------------------------- |
-| `SaveManager` | `this.GetSaveManager()` | Encrypted save slots.                                            |
-| `SignalBus`   | `this.GetSignalBus()`   | Global signals between unrelated nodes.                          |
-| `UIHolder`    | `this.GetUIHolder()`    | Layered container for all UI.                                    |
+| Autoload      | Access                  | Purpose                                                            |
+| :------------ | :---------------------- | :----------------------------------------------------------------- |
+| `SaveManager` | `this.GetSaveManager()` | Encrypted save slots.                                              |
+| `SignalBus`   | `this.GetSignalBus()`   | Global signals between unrelated nodes.                            |
+| `UIHolder`    | `this.GetUIHolder()`    | Layered container for all UI.                                      |
 | `FpsCounter`  | `this.GetFpsCounter()`  | FPS label. Set `ShowFps` in `config.tres`, or call `Toggle(bool)`. |
 
 Don't need one? Delete its folder, its line in `project.godot` (`[autoload]`) and its accessor in `AutoloadExtension.cs`.
@@ -136,18 +137,56 @@ Don't need one? Delete its folder, its line in `project.godot` (`[autoload]`) an
 
 ### SaveManager
 
-Stores key/value data in an encrypted file per slot (`user://savedata/save_001.save`). Slot 1 is loaded on startup, and every `SaveValue` writes to disk immediately. Deleting the loaded slot unloads it; call `LoadSave` before saving again.
+Saves a `SaveData` object (`core/data/save/SaveData.cs`) as encrypted JSON, one file per slot (`user://savedata/save_001.save`). Slot 1 is loaded on startup. Edit `Data` in memory, then call `Save()` to write it. Deleting the loaded slot unloads it; call `LoadSave` before saving again.
 
 ```csharp
 var saveManager = this.GetSaveManager();
 
-saveManager.SaveValue("Coins", 100);
-var coins = saveManager.LoadValue("Coins", 0).AsInt32();
+saveManager.Data.Player.TutorialCompleted = true;
+saveManager.Save();
 
-saveManager.LoadSave(2);    // switch slots; created if missing
+var hasSecondSlot = saveManager.SaveExists(2); // without loading it
+var result = saveManager.LoadSave(2); // switch slots: Loaded, New or BrokenSetAside
 saveManager.DeleteSave(2);
-var lastSaved = saveManager.GetLastWriteDate(); // empty if never saved
+var lastSaved = saveManager.LastWriteTime; // UTC; null if never saved
 ```
+
+`SaveData` ships with a sample `Player` section (`Name`, `CurrentScene`, `TutorialCompleted`); replace it with your own. Each section is a class in its own folder under `core/data/save/`, added to `SaveData` initialised with `new()`, so older saves without it still load. Use `{ get; set; }`, never `init`: the JSON source generator nulls missing init-only properties, ignoring their initialiser.
+
+```csharp
+// core/data/save/inventory/InventoryData.cs
+public sealed class InventoryData
+{
+    public int Coins { get; set; }
+}
+
+// core/data/save/SaveData.cs
+public sealed class SaveData
+{
+    public PlayerData Player { get; set; } = new();
+    public InventoryData Inventory { get; set; } = new();
+}
+```
+
+Unknown fields are ignored and missing ones keep their defaults; enums are saved by name. Adding fields is safe. Renaming a property drops its saved value. Renaming an enum member or changing a type makes the save unreadable, so it gets set aside.
+
+`Data` and its sections stay the same objects across `Save()`. `LoadSave` replaces them, so don't keep references across slot switches.
+
+Saves are protected against crashes and bad files:
+
+- **Crash-safe writes.** A save is written to `save_001.save.tmp` first. The old save is then renamed to `.old`, the `.tmp` file is renamed into place, and `.old` is deleted. The next time the slot is accessed, any leftover files are cleaned up, leaving either the old save or the new one.
+- **Verified writes.** Godot writes encrypted files on close and doesn't report errors there, for example a full disk. Each `.tmp` file is read back and compared before it replaces the save.
+- **Broken saves are set aside, not deleted.** If a slot can't be read (corrupt, wrong encryption key, invalid JSON), it is renamed to `save_001_BROKEN_<UTC time>.save`. The slot then starts empty, `LoadSave` returns `BrokenSetAside` and a warning is logged. To recover a broken save, rename it back to `save_001.save`.
+
+Inside `core/managers/save_manager/`:
+
+- `SaveManager.cs`: the autoload.
+- `store/`: `SaveStore`, the slot logic and broken-save policy.
+- `storage/`: `FileSaveStorage`, which handles file naming, crash-safe writes and recovery.
+- `storage/file_system/`: `GodotEncryptedFileSystem`, the only part that calls Godot.
+- `serialization/`: the JSON format.
+
+Everything except `GodotEncryptedFileSystem` runs without the engine and is unit tested.
 
 ### SignalBus
 

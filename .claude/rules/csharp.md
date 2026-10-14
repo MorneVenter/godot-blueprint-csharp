@@ -36,6 +36,14 @@ CSharpier owns layout: Allman braces, 4-space indent, ~100 columns, operator and
 - Namespace mirrors the folder in PascalCase: `core/managers/save_manager/SaveManager.cs` → `Game.Core.Managers.SaveManager`, class `SaveManager`. The repetition in the full name is fine because types are never fully qualified.
 - Folders `snake_case`; one class per file, file named after it. Godot scripts under `core/` get their own folder: `foo_bar/FooBar.cs`.
 
+## Folders
+
+Group files into folders by concern. Never pile a system's files into one flat folder.
+
+- A system with more than one kind of part gets a subfolder per concern; its entry point stays at the top. Example: `save_manager/SaveManager.cs` (the autoload), `save_manager/store/`, `save_manager/storage/` (interface + implementations), `save_manager/serialization/`.
+- Data classes nest the way they compose: `core/data/save/SaveData.cs`, its sections in `core/data/save/player/PlayerData.cs`, a section's own sub-objects beside it.
+- Split a folder once it holds files serving different concerns, or roughly five or more files. One-file folders are fine when the concern is distinct.
+
 ## Code
 
 - `var` everywhere (project override), except numeric literals where `float`/`double` matters: `float speed = 5f`.

@@ -25,6 +25,7 @@ Godot comes from `GODOT_BIN` (env or git-ignored `.env`); scripts error out if i
 
 - `core/configuration/` `GameConfig`; `GameLocale` (first autoload)
 - `core/extensions/` `Node` extension methods for config and autoloads
+- `core/data/` plain data classes; `save/SaveData.cs` with one folder per section (`save/player/`)
 - `core/managers/` autoloads: `FpsCounter`, `SaveManager`, `SignalBus`, `UIHolder`
 - `core/utilities/` pure static helpers; `core/resources/` custom resources
 - `scenes/` scenes + scripts by feature; `scenes/Main.tscn` is the entry
@@ -49,7 +50,7 @@ Empty folders hold a `.gitkeep`; delete it once the folder has content.
 - **Autoloads** are registered by UID in `project.godot`. Reach them only via `AutoloadExtension` (`this.GetSaveManager()`); its `/root/<Name>` paths must match the autoload names. Use the `/add-autoload` skill to add one.
 - **Config**: `this.GetConfig()` returns `GameConfig` from `res://config.tres`. New setting: `[Export]` property in an `[ExportGroup]`, value in `config.tres`.
 - **SignalBus**: global `[Signal]`s. Emit with `SignalName.X`, subscribe with `+=`, unsubscribe in `_ExitTree`.
-- **SaveManager**: encrypted Godot `Dictionary` per slot at `user://savedata/save_NNN.save`. `SaveValue` writes through immediately.
+- **SaveManager**: `SaveData` (`core/data/save/`) as encrypted JSON per slot at `user://savedata/save_NNN.save`. Edit `Data`, then `Save()`. New state: a section class in its own folder under `core/data/save/`, added to `SaveData` as a property initialised with `new()`. Writes go through a `.tmp`/`.old` swap that the next access recovers after a crash; unreadable slots are renamed `_BROKEN_<time>`, never deleted. Only `storage/file_system/GodotEncryptedFileSystem` calls Godot; test the rest (`SaveStore`, `FileSaveStorage`) with the fakes in `tests/fakes/`.
 - **UIHolder**: one full-rect layer per `UILayer` value, higher on top. Values must stay contiguous from 0.
 - **GameLocale**: the first autoload. Its constructor sets the process culture to `GameLocale.Culture` (invariant); Godot constructs autoloads in listed order, so this runs before any other game code. Tests don't run it, so always pass the culture explicitly.
 
@@ -58,6 +59,7 @@ Empty folders hold a `.gitkeep`; delete it once the folder has content.
 - Comment only where code isn't self-documenting: a non-obvious why, a workaround, an engine quirk. Precise and short. Never restate the code, never filler.
 - Never rely on the system culture: `GameLocale.Culture` for anything shown to players, `CultureInfo.InvariantCulture` for anything saved or machine-read (file names, save data).
 - Commit `.uid` and `.import` files but never write them by hand: create the file, then `npm run import`. Move them with their file. Of Godot's generated files, only the `.godot/` and `.import/` cache folders are ignored.
+- Group files into folders by concern, never one flat folder per system: an entry point on top, a subfolder per part (`save_manager/{store,storage,serialization}/`). Details in `csharp.md`.
 - Keep `README.md` in sync when changing public APIs, settings or commands.
 - A hook runs CSharpier on every edited `.cs`/`.csproj`/`.props`; don't format by hand.
 
