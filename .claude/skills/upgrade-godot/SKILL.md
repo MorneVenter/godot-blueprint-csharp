@@ -16,8 +16,8 @@ Stop if `git status` isn't clean. Work on a branch: `git switch -c upgrade-godot
    - `Game.csproj`: `Godot.NET.Sdk/<version>`
    - `project.godot`: `config/features` (major.minor)
    - `README.md` requirements table, `CLAUDE.md` intro
-4. **.NET (only if required).** `TargetFramework` in `Game.csproj`, `dotnet-version` in `.github/workflows/build.yml`, README, `CLAUDE.md`, and the C# version in `.claude/rules/csharp.md`.
-5. **Migrate.** `npm run clean`, `npm run import`, `npm run build`. Fix compile errors and apply the breaking changes from step 1.
+4. **.NET (only if required).** `TargetFramework` in `Game.csproj` and `tests/Game.Tests.csproj`, the SDK `version` in `global.json` (CI reads it from there), README, `CLAUDE.md`, and the C# version in `.claude/rules/csharp.md`.
+5. **Migrate.** `npm run clean`, `npm run import`, `npm run build`, `npm run build:godot`. Fix compile errors and apply the breaking changes from step 1.
 6. **Resave project files.** Ask the user to open the project once in the new editor and accept any upgrade prompt, so scenes and resources are saved in the new format.
-7. **Dependencies.** `dotnet list package --outdated` and `dotnet tool list`; bump test packages and CSharpier if there are compatible updates.
+7. **Dependencies.** `dotnet list Game.slnx package --outdated` and `dotnet tool list`; bump package versions in `Directory.Packages.props` and CSharpier in `dotnet-tools.json` if there are compatible updates.
 8. Run `npm run check`. Review the diff for unexpected engine rewrites of `.tscn`/`.tres`/`project.godot`. Summarize what changed and offer to commit.

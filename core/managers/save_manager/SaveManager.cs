@@ -99,7 +99,7 @@ public partial class SaveManager : Node
     }
 
     /// <summary>
-    /// Saves a value under a unique key and writes the slot to disk. Nil values are ignored.
+    /// Saves a value and writes the slot to disk. Nil values are ignored.
     /// </summary>
     public void SaveValue(string key, Variant value)
     {

@@ -1,24 +1,24 @@
 {
-	"name": "godot-csharp",
-	"private": true,
-	"type": "module",
-	"description": "CLI shortcuts for the Godot project.",
-	"engines": {
-		"node": ">=20.12"
-	},
-	"scripts": {
-		"godot": "node scripts/godot.mjs",
-		"start": "node scripts/run.mjs",
-		"import": "node scripts/import.mjs",
-		"new:scene": "node scripts/new-scene.mjs",
-		"smoke": "node scripts/smoke.mjs",
-		"export": "node scripts/export.mjs",
-		"clean": "node scripts/clean.mjs",
-		"build": "dotnet build",
-		"build:godot": "node scripts/build-godot.mjs",
-		"test": "dotnet test",
-		"format": "dotnet csharpier format .",
-		"format:check": "dotnet csharpier check .",
-		"check": "dotnet csharpier check . && dotnet build && dotnet test --no-build && node scripts/smoke.mjs"
-	}
+  "name": "godot-csharp",
+  "private": true,
+  "type": "module",
+  "description": "CLI shortcuts for the Godot project.",
+  "engines": {
+    "node": ">=20.12"
+  },
+  "scripts": {
+    "godot": "node scripts/godot.mjs",
+    "start": "node scripts/run.mjs",
+    "import": "node scripts/import.mjs",
+    "new:scene": "node scripts/new-scene.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "export": "node scripts/export.mjs",
+    "clean": "node scripts/clean.mjs",
+    "build": "dotnet build Game.slnx",
+    "build:godot": "node scripts/build-godot.mjs",
+    "test": "dotnet test --solution Game.slnx",
+    "format": "dotnet csharpier format .",
+    "format:check": "dotnet csharpier check .",
+    "check": "dotnet csharpier check . && dotnet build Game.slnx && dotnet test --solution Game.slnx --no-build && node scripts/smoke.mjs"
+  }
 }

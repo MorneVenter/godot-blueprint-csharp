@@ -1,6 +1,7 @@
 ---
 paths:
   - "scripts/**"
+  - ".claude/hooks/**"
   - "package.json"
 ---
 

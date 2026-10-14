@@ -12,5 +12,8 @@ indent_size = 4
 dotnet_diagnostic.IDE0008.severity = none
 dotnet_diagnostic.IDE0058.severity = none
 
+# Namespaces mirror folders, so SaveManager lives in Game.Core.Managers.SaveManager by design.
+dotnet_diagnostic.MA0049.severity = none
+
 [*.gd]
 indent_style = tab

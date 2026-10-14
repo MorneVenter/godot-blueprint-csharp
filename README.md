@@ -71,18 +71,18 @@ Useful reading: [Godot docs](https://docs.godotengine.org/en/stable/) and [C# in
 | `npm run import`                          | Import new assets headless and generate missing `.uid` files.                                                                    |
 | `npm run build:godot`                     | Build through Godot, exactly like the editor does.                                                                               |
 | `npm run export -- <preset> <path>`       | Export a build. Add `--debug` or `--pack`. See [Exporting](#exporting).                                                          |
-| `npm run clean`                           | Delete `.godot/`, `bin/` and `obj/` to force a full reimport and rebuild.                                                        |
+| `npm run clean`                           | Delete `.godot/`, build output and test results to force a full reimport and rebuild.                                            |
 | `npm run godot -- <args>`                 | Run Godot with any [command line arguments](https://docs.godotengine.org/en/stable/tutorials/editor/command_line_tutorial.html). |
 
 The commands are plain Node scripts in `scripts/` and work the same on macOS, Windows and Linux.
 
-GitHub Actions builds and tests every push and pull request to `main`.
+GitHub Actions checks formatting, builds and tests every push and pull request to `main`. Warnings fail the CI build.
 
 ### Adding Scenes and Scripts
 
 Use `npm run new:scene` instead of creating scenes by hand: it writes the C# script with the right namespace, attaches it to a new scene and gives both a Godot `uid://`.
 
-Every script and resource has a `.uid` file next to it. **Commit them**, and move them along when you move or rename a file; scenes reference scripts through them. When you create files outside the editor, `npm run import` generates the missing ones.
+Every script has a `.uid` file next to it, and every imported asset (images, audio, models) has a `.import` file. **Commit both**, and move them along when you move or rename a file: they hold the `uid://` that scenes and settings reference, and each asset's import settings. When you create files outside the editor, `npm run import` generates the missing ones.
 
 ### Exporting
 
@@ -99,19 +99,23 @@ npm run export -- "macOS" builds/macos/MyGame.zip --debug
 
 ## Project Structure
 
-| Path                  | What goes there                                                         |
-| :-------------------- | :---------------------------------------------------------------------- |
-| `scenes/`             | Scenes and their scripts, grouped by feature. `Main.tscn` is the entry. |
-| `core/managers/`      | Autoloads (global singletons).                                          |
-| `core/configuration/` | `GameConfig` (project settings) and `GameLocale`.                       |
-| `core/extensions/`    | Extension methods that give any node access to config and autoloads.    |
-| `core/resources/`     | Custom `Resource` types.                                                |
-| `core/utilities/`     | Static helpers.                                                         |
-| `assets/`             | Your own art, audio, fonts, models and shaders.                         |
-| `assets/external/`    | Third-party assets. Keep their licenses next to them.                   |
-| `tests/`              | Unit tests.                                                             |
-| `scripts/`            | The CLI shortcuts.                                                      |
-| `config.tres`         | Your project settings (see [Configuration](#configuration)).            |
+| Path                       | What goes there                                                         |
+| :------------------------- | :---------------------------------------------------------------------- |
+| `scenes/`                  | Scenes and their scripts, grouped by feature. `Main.tscn` is the entry. |
+| `core/managers/`           | Autoloads (global singletons).                                          |
+| `core/configuration/`      | `GameConfig` (project settings) and `GameLocale`.                       |
+| `core/extensions/`         | Extension methods that give any node access to config and autoloads.    |
+| `core/resources/`          | Custom `Resource` types.                                                |
+| `core/utilities/`          | Static helpers.                                                         |
+| `assets/`                  | Your own art, audio, fonts, models and shaders.                         |
+| `assets/external/`         | Third-party assets. Keep their licenses next to them.                   |
+| `tests/`                   | The unit test project (see [Tests](#tests)).                            |
+| `scripts/`                 | The CLI shortcuts.                                                      |
+| `config.tres`              | Your project settings (see [Configuration](#configuration)).            |
+| `Game.csproj`, `Game.slnx` | The C# project and solution. Godot needs both in the project root.      |
+| `Directory.Build.props`    | Build settings shared by all projects (nullable, implicit usings).      |
+| `Directory.Packages.props` | Every NuGet package version, in one place.                              |
+| `global.json`              | Pins the .NET SDK version (10.0.x, latest patch) and the test runner.   |
 
 Empty folders contain a `.gitkeep` so Git keeps them; delete it once the folder has content.
 
@@ -127,6 +131,8 @@ All of these are autoloads registered in `project.godot`. Reach them from any no
 | `FpsCounter`  | `this.GetFpsCounter()`  | FPS label. Set `ShowFps` in `config.tres`, or call `Toggle(bool)`. |
 
 Don't need one? Delete its folder, its line in `project.godot` (`[autoload]`) and its accessor in `AutoloadExtension.cs`.
+
+`GameLocale` is also an autoload, listed first so it runs before everything else; see [Locale](#locale).
 
 ### SaveManager
 
@@ -190,7 +196,7 @@ UIHolder.Remove(pauseMenu);                             // free it
 
 ### Locale
 
-`GameLocale` makes C# format numbers and dates the same on every machine, whatever the player's system language. Without it, `1.5` prints as `1,5` on some systems. It uses the invariant culture by default; change `GameLocale.Culture` to pick another. Saved data and file names always use the invariant culture, so changing it never breaks existing saves.
+`GameLocale` is the first autoload and makes C# format numbers and dates the same on every machine, whatever the player's system language. Without it, `1.5` prints as `1,5` on some systems. It uses the invariant culture by default; change `GameLocale.Culture` to pick another. Saved data and file names always use the invariant culture, so changing it never breaks existing saves.
 
 For translated text, use Godot's [localization](https://docs.godotengine.org/en/stable/tutorials/i18n/internationalizing_games.html) system.
 
@@ -201,13 +207,21 @@ For translated text, use Godot's [localization](https://docs.godotengine.org/en/
 
 ## Tests
 
-Unit tests live in `tests/` and use [NUnit](https://docs.nunit.org/). Run them with `npm test`.
+Unit tests are a separate [NUnit](https://docs.nunit.org/) project, `tests/Game.Tests.csproj`, that references the game project. They run on [Microsoft.Testing.Platform](https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-intro), the modern .NET test runner. Run them with `npm test`, or `dotnet test --solution Game.slnx`.
+
+- **Kept out of your game:** test code and NUnit never end up in `Game.dll`, and exports skip the test project entirely.
+- **Invisible to Godot:** `tests/.gdignore` stops the editor from importing the folder, so there are no `.uid` files in it.
+- **Same layout as the code:** tests for `core/utilities/PrettyNumbers.cs` live in `tests/core/utilities/PrettyNumbersTests.cs`.
+
+Results are written to `tests/.results/` (git-ignored).
 
 Tests run without the Godot engine, so they can only cover plain C# code: no nodes, scenes or `GD` calls. Godot math types like `Vector3` are fine. Keep game logic you want to test in plain classes.
 
+To add a package, put its version in `Directory.Packages.props` and a `<PackageReference Include="..." />` without a version in the project that uses it. Test packages go in `tests/Game.Tests.csproj`, never in `Game.csproj`.
+
 ## Code Style
 
-The project follows the [Godot C# style guide](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_style_guide.html), with C# 14. CSharpier does all formatting, so run `npm run format` and don't think about it. The essentials:
+The project follows the [Godot C# style guide](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_style_guide.html), with C# 14. CSharpier does all formatting: run `npm run format`. [Meziantou.Analyzer](https://github.com/meziantou/Meziantou.Analyzer) checks every build for bugs and bad practices; rules that clash with our conventions are configured in `.editorconfig`. The essentials:
 
 | What                                                       | Style                   | Example                     |
 | :--------------------------------------------------------- | :---------------------- | :-------------------------- |

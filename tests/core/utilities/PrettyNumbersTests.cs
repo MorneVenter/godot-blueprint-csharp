@@ -1,6 +1,6 @@
-using NUnit.Framework;
+using Game.Core.Utilities;
 
-namespace Tests.PrettyNumbersTests;
+namespace Game.Tests.Core.Utilities;
 
 [TestFixture]
 public class PrettyNumbersTests

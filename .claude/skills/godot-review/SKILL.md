@@ -19,7 +19,7 @@ Scope: $ARGUMENTS. If empty, review `git diff HEAD` plus untracked `.cs`/`.tscn`
 
 **Lifecycle**
 - Classes deriving from Godot types are `partial`.
-- Node lookups and setup in `_Ready`, not the constructor. `GetNode` results cached, never repeated per frame.
+- Node lookups and scene-tree setup in `_Ready`, not the constructor. `GetNode` results cached, never repeated per frame.
 - No use of a node after `QueueFree`/`Free`; guard with `IsInstanceValid` where lifetime is uncertain.
 - `await ToSignal(...)` resumes after the awaiting node may be freed: check `IsInstanceValid(this)` after awaits.
 - Scene-tree access only from the main thread; use `CallDeferred` from threads.

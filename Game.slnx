@@ -5,4 +5,8 @@
     <BuildType Name="ExportRelease" />
   </Configurations>
   <Project Path="Game.csproj" DefaultStartup="true" />
+  <Project Path="tests/Game.Tests.csproj">
+    <Build Solution="ExportDebug|*" Project="false" />
+    <Build Solution="ExportRelease|*" Project="false" />
+  </Project>
 </Solution>

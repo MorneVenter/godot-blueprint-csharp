@@ -3,12 +3,12 @@ namespace Game.Core.Utilities;
 public static class RotationHelper
 {
     /// <summary>
-    /// Linearly interpolates between two Vector3 rotations in radians.
+    /// Interpolates each axis the shortest way around. Angles are in radians.
     /// </summary>
-    public static Vector3 LerpRotation(Vector3 from, Vector3 to, float lerpAmount) =>
+    public static Vector3 LerpRotation(Vector3 from, Vector3 to, float weight) =>
         new(
-            Mathf.LerpAngle(from.X, to.X, lerpAmount),
-            Mathf.LerpAngle(from.Y, to.Y, lerpAmount),
-            Mathf.LerpAngle(from.Z, to.Z, lerpAmount)
+            Mathf.LerpAngle(from.X, to.X, weight),
+            Mathf.LerpAngle(from.Y, to.Y, weight),
+            Mathf.LerpAngle(from.Z, to.Z, weight)
         );
 }

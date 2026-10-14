@@ -9,7 +9,8 @@ Godot C# style guide, with project overrides marked.
 
 ## Language
 
-- C# 14 (project override: the guide targets C# 12). Nullable reference types on; treat warnings as errors in spirit.
+- C# 14 (project override: the guide targets C# 12). Nullable reference types on. CI treats warnings as errors, so keep local builds at 0 warnings.
+- Meziantou.Analyzer runs on every project (NUnit.Analyzers on tests). Fix what it reports. If a rule conflicts with a project convention, set its severity in `.editorconfig` with a one-line reason; never `#pragma` or `[SuppressMessage]`.
 - Implicit usings plus `GlobalUsings.cs`. `Godot.Collections` is not global: add `using Godot.Collections;` only where engine collections are needed.
 
 ## Formatting
@@ -26,7 +27,7 @@ CSharpier owns layout: Allman braces, 4-space indent, ~100 columns, operator and
 | :-- | :-- | :-- |
 | Namespaces, types, methods, properties, events, constants, enum values | PascalCase | `MaxHealth`, `State.Idle` |
 | Locals, parameters | camelCase | `targetPosition` |
-| Private fields | `_camelCase` | `_saveId` |
+| Private fields | `_camelCase` | `_currentHealth` |
 | Interfaces | `I` prefix | `IDamageable` |
 | Signals | `<Name>EventHandler` delegate | `HealthChangedEventHandler` |
 

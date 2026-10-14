@@ -40,10 +40,8 @@ public partial class FpsCounter : Control
             Size = LabelSize,
             Position = LabelPosition,
             ZIndex = (int)RenderingServer.CanvasItemZMax,
-            ProcessMode = ProcessModeEnum.Always,
         };
 
-        label.SetAnchorsPreset(LayoutPreset.TopLeft);
         AddChild(label);
 
         return label;

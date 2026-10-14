@@ -4,7 +4,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const FORMATTED = /\.(cs|csproj)$/;
+const FORMATTED = /\.(cs|csproj|props|targets)$/;
 
 const input = JSON.parse(readFileSync(0, "utf8"));
 const file = input.tool_input?.file_path;

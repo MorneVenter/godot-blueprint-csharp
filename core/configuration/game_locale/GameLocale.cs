@@ -1,14 +1,12 @@
 using System.Globalization;
-using System.Runtime.CompilerServices;
 
 namespace Game.Core.Configuration.GameLocale;
 
-public static class GameLocale
+public partial class GameLocale : Node
 {
     public static readonly CultureInfo Culture = CultureInfo.InvariantCulture;
 
-    [ModuleInitializer]
-    internal static void Apply()
+    public GameLocale()
     {
         CultureInfo.DefaultThreadCurrentCulture = Culture;
         CultureInfo.DefaultThreadCurrentUICulture = Culture;
