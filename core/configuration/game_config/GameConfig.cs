@@ -5,7 +5,7 @@ public partial class GameConfig : Resource
 {
     [ExportGroup("Debug")]
     [Export]
-    public bool ShowFPS { get; set; } = false;
+    public bool ShowFps { get; set; }
 
     [ExportGroup("Save Files")]
     [Export]

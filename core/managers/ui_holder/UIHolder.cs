@@ -2,7 +2,7 @@ namespace Game.Core.Managers.UIHolder;
 
 public partial class UIHolder : Control
 {
-    public enum UiLayer
+    public enum UILayer
     {
         WorldBackground = 0,
         WorldForeground = 1,
@@ -11,13 +11,13 @@ public partial class UIHolder : Control
         MenuOverlay = 4,
     }
 
-    private readonly Array<Control> _uiLayers = [];
+    private readonly List<Control> _uiLayers = [];
 
     public override void _Ready()
     {
         SetAnchorsPreset(LayoutPreset.FullRect);
 
-        foreach (var layer in Enum.GetValues<UiLayer>())
+        foreach (var layer in Enum.GetValues<UILayer>())
         {
             var zIndex = (int)layer + 1;
 
@@ -35,14 +35,21 @@ public partial class UIHolder : Control
         }
     }
 
-    public void Add(Control uiItem, UiLayer layer)
+    /// <summary>
+    /// Adds the control to a layer, moving it there if it already has a parent.
+    /// </summary>
+    public void Add(Control uiItem, UILayer layer)
     {
         var layerControl = GetLayer(layer);
+        var parent = uiItem.GetParent();
 
-        if (uiItem.GetParent() == layerControl)
+        if (parent == layerControl)
             return;
 
-        uiItem.Reparent(layerControl);
+        if (parent is null)
+            layerControl.AddChild(uiItem);
+        else
+            uiItem.Reparent(layerControl);
     }
 
     public static void Remove(Control uiItem)
@@ -50,7 +57,7 @@ public partial class UIHolder : Control
         uiItem.QueueFree();
     }
 
-    public void Unparent(Control uiItem, UiLayer layer)
+    public void Unparent(Control uiItem, UILayer layer)
     {
         var layerControl = GetLayer(layer);
 
@@ -61,12 +68,12 @@ public partial class UIHolder : Control
         uiItem.RequestReady();
     }
 
-    public void ToggleVisible(UiLayer layer, bool value)
+    public void ToggleVisible(UILayer layer, bool value)
     {
         GetLayer(layer).Visible = value;
     }
 
-    private Control GetLayer(UiLayer layer)
+    private Control GetLayer(UILayer layer)
     {
         var index = (int)layer;
 

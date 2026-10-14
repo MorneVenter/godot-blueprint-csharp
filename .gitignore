@@ -490,3 +490,9 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Godot exports
+builds/

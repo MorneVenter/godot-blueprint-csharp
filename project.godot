@@ -24,7 +24,7 @@ config/icon="res://icon.png"
 FpsCounter="*uid://c5uyymg5ddoce"
 SaveManager="*uid://utwfaywa0i1"
 SignalBus="*uid://df5aal2e3djlm"
-UiHolder="*uid://bqyskvc28oyhb"
+UIHolder="*uid://bqyskvc28oyhb"
 
 [debug]
 
@@ -41,10 +41,6 @@ window/stretch/mode="canvas_items"
 
 project/assembly_name="Game"
 project/solution_directory="."
-
-[editor]
-
-script_templates_search_path="res://.script_templates"
 
 [editor_plugins]
 

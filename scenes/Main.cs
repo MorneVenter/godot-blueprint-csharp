@@ -1,4 +1,4 @@
-namespace Game;
+namespace Game.Scenes;
 
 public partial class Main : Node
 {

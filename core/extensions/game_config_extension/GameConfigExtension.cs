@@ -2,7 +2,7 @@ using Game.Core.Configuration.GameConfig;
 
 namespace Game.Core.Extensions.GameConfigExtension;
 
-public static class AutoLoadExtension
+public static class GameConfigExtension
 {
     private const string ConfigPath = "res://config.tres";
 

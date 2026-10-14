@@ -1,4 +1,5 @@
 using System.Globalization;
+using Godot.Collections;
 using FileAccess = Godot.FileAccess;
 
 namespace Game.Core.Managers.SaveManager;
@@ -8,112 +9,63 @@ public partial class SaveManager : Node
     private const string UserFolder = "user://";
     private const string SaveFolder = "savedata";
     private const string DateKey = "LAST_WRITE_DATE_TIME";
+    private const int DefaultSlot = 1;
 
     private string _key = string.Empty;
-    private int _saveId = 1;
-
-    private readonly Dictionary _defaultValues = new() { [DateKey] = "-" };
-
+    private int? _slot;
     private Dictionary _data = [];
 
     public override void _EnterTree()
     {
         _key = this.GetConfig().SaveFileEncryptionKey;
-        LoadSaveData();
+        LoadSave(DefaultSlot);
     }
 
-    private static string GetSavePath(int id) =>
-        $"{UserFolder}{SaveFolder}/save_{id.ToString("D3", CultureInfo.InvariantCulture)}.save";
-
-    private string GetSavePath() => GetSavePath(_saveId);
+    private static string GetSavePath(int slot) =>
+        $"{UserFolder}{SaveFolder}/save_{slot.ToString("D3", CultureInfo.InvariantCulture)}.save";
 
     private void CreateSaveIfNotExists(string path)
     {
-        if (!FileAccess.FileExists(path))
-            InitializeNewSaveFile(path);
-    }
+        if (FileAccess.FileExists(path))
+            return;
 
-    private void InitializeNewSaveFile(string path)
-    {
         using var directory =
             DirAccess.Open(UserFolder)
-            ?? throw new System.Exception($"Could not open save directory: {UserFolder}");
+            ?? throw new IOException($"Could not open save directory: {UserFolder}");
 
         var directoryError = directory.MakeDirRecursive(SaveFolder);
 
         if (directoryError != Error.Ok)
-            throw new System.Exception(
+            throw new IOException(
                 $"Could not create save directory '{SaveFolder}': {directoryError}"
             );
 
-        using var saveFile =
-            FileAccess.OpenEncryptedWithPass(path, FileAccess.ModeFlags.Write, _key)
-            ?? throw new System.Exception($"Could not create encrypted save file: {path}");
-
-        saveFile.StoreVar(_defaultValues);
+        WriteSaveFile(path, []);
     }
 
-    private void LoadSaveData()
+    private void WriteSaveFile(string path, Dictionary data)
     {
-        var savePath = GetSavePath();
-        CreateSaveIfNotExists(savePath);
-
         using var saveFile =
-            FileAccess.OpenEncryptedWithPass(savePath, FileAccess.ModeFlags.Read, _key)
-            ?? throw new InvalidOperationException(
-                $"Could not open save file '{savePath}'. The encryption key may be invalid."
+            FileAccess.OpenEncryptedWithPass(path, FileAccess.ModeFlags.Write, _key)
+            ?? throw new IOException($"Could not write save file '{path}'.");
+
+        saveFile.StoreVar(data);
+    }
+
+    private Dictionary ReadSaveFile(string path)
+    {
+        using var saveFile =
+            FileAccess.OpenEncryptedWithPass(path, FileAccess.ModeFlags.Read, _key)
+            ?? throw new IOException(
+                $"Could not open save file '{path}'. The encryption key may be invalid."
             );
 
         var loadedData = saveFile.GetVar();
 
         if (loadedData.VariantType != Variant.Type.Dictionary)
-            throw new System.IO.InvalidDataException(
-                $"Save file contains invalid data: {savePath}"
-            );
+            throw new InvalidDataException($"Save file contains invalid data: {path}");
 
-        _data = loadedData.AsGodotDictionary();
-    }
-
-    private void UpdateSaveFile()
-    {
-        var savePath = GetSavePath();
-        CreateSaveIfNotExists(savePath);
-
-        using var saveFile =
-            FileAccess.OpenEncryptedWithPass(savePath, FileAccess.ModeFlags.Write, _key)
-            ?? throw new InvalidOperationException(
-                $"Could not open save file '{savePath}'. The encryption key may be invalid."
-            );
-
-        saveFile.StoreVar(_data);
-    }
-
-    private static void DeleteSaveData(int id)
-    {
-        var savePath = GetSavePath(id);
-        var absolutePath = ProjectSettings.GlobalizePath(savePath);
-        var error = DirAccess.RemoveAbsolute(absolutePath);
-
-        if (error != Error.Ok && error != Error.FileNotFound)
-            throw new System.IO.IOException($"Could not delete save file '{savePath}': {error}");
-    }
-
-    private void UnloadAndReset()
-    {
-        _data = [];
-        _saveId = 1;
-    }
-
-    /// <summary>
-    /// Deletes a save slot. If it is active, the loaded data is cleared.
-    /// Call LoadSave to load a save file again.
-    /// </summary>
-    public void DeleteSave(int slot)
-    {
-        DeleteSaveData(slot);
-
-        if (slot == _saveId)
-            UnloadAndReset();
+        return loadedData.AsGodotDictionary();
     }
 
     /// <summary>
@@ -121,22 +73,46 @@ public partial class SaveManager : Node
     /// </summary>
     public void LoadSave(int slot)
     {
-        _saveId = slot;
-        LoadSaveData();
+        var savePath = GetSavePath(slot);
+        CreateSaveIfNotExists(savePath);
+
+        _data = ReadSaveFile(savePath);
+        _slot = slot;
     }
 
     /// <summary>
-    /// Saves a value under a unique key and updates the last-write timestamp.
-    /// Nil values are ignored.
+    /// Deletes a save slot. Deleting the loaded slot unloads it: call LoadSave before saving again.
+    /// </summary>
+    public void DeleteSave(int slot)
+    {
+        var savePath = GetSavePath(slot);
+        var error = DirAccess.RemoveAbsolute(ProjectSettings.GlobalizePath(savePath));
+
+        if (error != Error.Ok && error != Error.FileNotFound)
+            throw new IOException($"Could not delete save file '{savePath}': {error}");
+
+        if (slot != _slot)
+            return;
+
+        _slot = null;
+        _data = [];
+    }
+
+    /// <summary>
+    /// Saves a value under a unique key and writes the slot to disk. Nil values are ignored.
     /// </summary>
     public void SaveValue(string key, Variant value)
     {
         if (value.VariantType == Variant.Type.Nil)
             return;
 
+        var slot =
+            _slot
+            ?? throw new InvalidOperationException("No save slot loaded. Call LoadSave first.");
+
         _data[key] = value;
         _data[DateKey] = Time.GetDatetimeStringFromSystem();
-        UpdateSaveFile();
+        WriteSaveFile(GetSavePath(slot), _data);
     }
 
     /// <summary>
@@ -144,16 +120,14 @@ public partial class SaveManager : Node
     /// </summary>
     public Variant LoadValue(string key, Variant defaultValue = default)
     {
-        if (!_data.ContainsKey(key))
+        if (!_data.TryGetValue(key, out var value))
             return defaultValue;
-
-        var value = _data[key];
 
         return value.VariantType == Variant.Type.Nil ? defaultValue : value;
     }
 
     /// <summary>
-    /// Gets the last-write timestamp in YYYY-MM-DDTHH:MM:SS format.
+    /// Gets the last-write timestamp (YYYY-MM-DDTHH:MM:SS), or an empty string if the slot was never written.
     /// </summary>
     public string GetLastWriteDate() => LoadValue(DateKey, string.Empty).As<string>();
 }

@@ -1,12 +1,16 @@
 root = true
 
-# All Files
 [*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
 indent_style = space
-
-[*.sln]
-indent_style = tab
+indent_size = 2
 
 [*.cs]
+indent_size = 4
 dotnet_diagnostic.IDE0008.severity = none
 dotnet_diagnostic.IDE0058.severity = none
+
+[*.gd]
+indent_style = tab

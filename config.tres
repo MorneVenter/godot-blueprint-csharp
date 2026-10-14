@@ -4,5 +4,5 @@
 
 [resource]
 script = ExtResource("1_x30i3")
-ShowFPS = true
+ShowFps = true
 metadata/_custom_type_script = "uid://qrtrqels2khu"

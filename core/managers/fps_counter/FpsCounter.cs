@@ -2,60 +2,50 @@ namespace Game.Core.Managers.FpsCounter;
 
 public partial class FpsCounter : Control
 {
-    private bool _enabled;
+    private static readonly Vector2 LabelSize = new(160, 32);
+    private static readonly Vector2 LabelPosition = new(8, 8);
+
     private Label? _label;
+    private double _shownFps;
 
     public override void _Ready()
     {
-        _enabled = this.GetConfig().ShowFPS;
         ProcessMode = ProcessModeEnum.Always;
-
-        if (_enabled)
-            CreateFpsLabel();
+        Toggle(this.GetConfig().ShowFps);
     }
 
     public override void _Process(double delta)
     {
-        UpdateFps();
+        var fps = Engine.GetFramesPerSecond();
+
+        if (fps == _shownFps || _label is null)
+            return;
+
+        _shownFps = fps;
+        _label.Text = string.Create(GameLocale.Culture, $"{fps:F1} FPS");
     }
 
-    public void Toggle(bool value)
-    {
-        GD.Print(value);
-
-        if (value)
-            CreateFpsLabel();
-        else
-        {
-            _label?.QueueFree();
-            _label = null;
-        }
-
-        _enabled = value;
-    }
-
-    private void CreateFpsLabel()
+    public void Toggle(bool enabled)
     {
         _label?.QueueFree();
+        _label = enabled ? CreateLabel() : null;
+        _shownFps = double.NaN;
+        SetProcess(enabled);
+    }
 
-        _label = new Label
+    private Label CreateLabel()
+    {
+        var label = new Label
         {
-            Size = new Vector2(160, 32),
-            Position = new Vector2(8, 8),
-            Text = "0 FPS",
-            ZIndex = 99,
+            Size = LabelSize,
+            Position = LabelPosition,
+            ZIndex = (int)RenderingServer.CanvasItemZMax,
             ProcessMode = ProcessModeEnum.Always,
         };
 
-        _label.SetAnchorsPreset(LayoutPreset.TopLeft);
-        AddChild(_label);
-    }
+        label.SetAnchorsPreset(LayoutPreset.TopLeft);
+        AddChild(label);
 
-    private void UpdateFps()
-    {
-        if (!_enabled || !GodotObject.IsInstanceValid(_label))
-            return;
-
-        _label!.Text = $"{Engine.GetFramesPerSecond():F1} FPS";
+        return label;
     }
 }
