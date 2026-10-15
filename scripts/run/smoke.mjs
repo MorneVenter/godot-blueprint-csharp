@@ -1,5 +1,5 @@
 import { parseArgs } from "node:util";
-import { runGodot } from "./lib/godot.mjs";
+import { runGodot } from "../lib/godot.mjs";
 
 const DEFAULT_FRAMES = "120";
 

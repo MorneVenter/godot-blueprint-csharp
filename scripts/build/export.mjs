@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { fail, ROOT, runGodotAndExit } from "./lib/godot.mjs";
+import { fail, ROOT, runGodotAndExit } from "../lib/godot.mjs";
 
 const PRESETS_FILE = resolve(ROOT, "export_presets.cfg");
 const USAGE = [

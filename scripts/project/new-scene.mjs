@@ -1,11 +1,12 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, relative, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
-import { fail, ROOT, runGodot } from "./lib/godot.mjs";
+import { fail, ROOT, runGodot } from "../lib/godot.mjs";
 
 const USAGE = "usage: npm run new:scene -- <scenes/feature/Name.tscn> [--type Node2D]";
 const ROOT_NAMESPACE = "Game";
-const SET_UID_SCRIPT = resolve(ROOT, "scripts/godot/set_uid.gd");
+const SET_UID_SCRIPT = fileURLToPath(new URL("set_uid.gd", import.meta.url));
 const PASCAL_CASE = /^[A-Z][A-Za-z0-9]*$/;
 const SNAKE_CASE = /^[a-z][a-z0-9_]*$/;
 
