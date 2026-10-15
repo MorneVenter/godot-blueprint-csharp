@@ -6,6 +6,7 @@ namespace Game.Tests.Core.Utilities;
 public class PrettyNumbersTests
 {
     [Test]
+    [TestCase(float.NaN, "0")]
     [TestCase(100f, "100")]
     [TestCase(-100f, "-100")]
     [TestCase(999f, "999")]

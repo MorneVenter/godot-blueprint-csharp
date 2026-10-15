@@ -116,7 +116,7 @@ npm run export -- "macOS" builds/macos/MyGame.zip --debug
 | `Game.csproj`, `Game.slnx` | The C# project and solution. Godot needs both in the project root.      |
 | `Directory.Build.props`    | Build settings shared by all projects (nullable, implicit usings).      |
 | `Directory.Packages.props` | Every NuGet package version, in one place.                              |
-| `global.json`              | Pins the .NET SDK version (10.0.x, latest patch) and the test runner.   |
+| `global.json`              | Pins the .NET SDK and the test runner.                                  |
 
 Empty folders contain a `.gitkeep` so Git keeps them; delete it once the folder has content.
 
@@ -151,7 +151,7 @@ saveManager.DeleteSave(2);
 var lastSaved = saveManager.LastWriteTime; // UTC; null if never saved
 ```
 
-`SaveData` ships with a sample `Player` section (`Name`, `CurrentScene`, `TutorialCompleted`); replace it with your own. Each section is a class in its own folder under `core/data/save/`, added to `SaveData` initialised with `new()`, so older saves without it still load. Use `{ get; set; }`, never `init`: the JSON source generator nulls missing init-only properties, ignoring their initialiser.
+`SaveData` ships with a sample `Player` section (`Name`, `CurrentScene`, `TutorialCompleted`); replace it with your own. The rules for adding a section are in the doc comment on `SaveData`:
 
 ```csharp
 // core/data/save/inventory/InventoryData.cs
@@ -178,15 +178,7 @@ Saves are protected against crashes and bad files:
 - **Verified writes.** Godot writes encrypted files on close and doesn't report errors there, for example a full disk. Each `.tmp` file is read back and compared before it replaces the save.
 - **Broken saves are set aside, not deleted.** If a slot can't be read (corrupt, wrong encryption key, invalid JSON), it is renamed to `save_001_BROKEN_<UTC time>.save`. The slot then starts empty, `LoadSave` returns `BrokenSetAside` and a warning is logged. To recover a broken save, rename it back to `save_001.save`.
 
-Inside `core/managers/save_manager/`:
-
-- `SaveManager.cs`: the autoload.
-- `store/`: `SaveStore`, the slot logic and broken-save policy.
-- `storage/`: `FileSaveStorage`, which handles file naming, crash-safe writes and recovery.
-- `storage/file_system/`: `GodotEncryptedFileSystem`, the only part that calls Godot.
-- `serialization/`: the JSON format.
-
-Everything except `GodotEncryptedFileSystem` runs without the engine and is unit tested.
+Only `GodotEncryptedFileSystem` calls Godot; the rest of the save system runs without the engine and is unit tested.
 
 ### SignalBus
 

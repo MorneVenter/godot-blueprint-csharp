@@ -10,6 +10,9 @@ public static class PrettyNumbers
 
     public static string Format(double number)
     {
+        if (double.IsNaN(number))
+            number = 0;
+
         var magnitude = Math.Abs(number);
 
         if (magnitude < Thousand)
