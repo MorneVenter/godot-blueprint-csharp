@@ -4,31 +4,21 @@ Godot Mono template in C# / .NET; versions are in `README.md` (Requirements). It
 
 ## Commands
 
-| Command                                                | Purpose                                                            |
-| :----------------------------------------------------- | :----------------------------------------------------------------- |
-| `npm run check`                                        | Format check, build, test and smoke. Run before calling work done. |
-| `npm run build`                                        | `dotnet build Game.slnx`                                           |
-| `npm test`                                             | `dotnet test --solution Game.slnx`                                 |
-| `npm run format`                                       | CSharpier (`dotnet tool restore` once first)                       |
-| `npm run smoke [-- --frames N --scene <path\|uid>]`    | Headless run; fails on any engine or script error                  |
-| `npm run import`                                       | Headless import; generates `.uid` files                            |
-| `npm run new:scene -- <scenes/x/Name.tscn> --type <T>` | Scene + script with uids                                           |
-| `npm run build:godot`                                  | Build through Godot                                                |
-| `npm run export -- <preset> <path> [--debug\|--pack]`  | Export a build                                                     |
-| `npm run clean`                                        | Delete `.godot/`, build output and test results                    |
-| `npm run godot -- <args>`                              | Raw Godot CLI against the project                                  |
-| `npm start [-- <scene>]`                               | Opens a window: only when asked, use smoke otherwise               |
+Commands are npm scripts in `package.json`, documented in `README.md`. For agents:
 
-Godot comes from `GODOT_BIN` (env or git-ignored `.env`); scripts error out if it's unset. Never hardcode an install path. CI runs restore, format check, build and test on Ubuntu.
+- `npm run check` before calling work done.
+- `npm run smoke` to run the game headless. `npm start` opens a window: only when asked.
+
+Godot comes from `GODOT_BIN` (env or git-ignored `.env`); scripts error out if it's unset. Never hardcode an install path. CI (`.github/workflows/`) has no Godot, so smoke only runs locally.
 
 ## Layout
 
-- `core/configuration/` `GameConfig`; `GameLocale` (first autoload)
-- `core/extensions/` `Node` extension methods for config and autoloads
-- `core/data/` plain data classes; `save/SaveData.cs` with one folder per section (`save/player/`)
-- `core/managers/` autoloads: `FpsCounter`, `SaveManager`, `SignalBus`, `UIHolder`
+- `core/configuration/` game-wide configuration
+- `core/extensions/` `Node` extension methods
+- `core/data/` plain data classes; save data nests one folder per section under `save/`
+- `core/managers/` autoloads, one folder each
 - `core/utilities/` pure static helpers; `core/resources/` custom resources
-- `scenes/` scenes + scripts by feature; `scenes/Main.tscn` is the entry
+- `scenes/` scenes + scripts by feature; the entry scene is `run/main_scene` in `project.godot`
 - `assets/` own assets; `assets/external/` third-party (licenses alongside)
 - `tests/` separate NUnit project `Game.Tests.csproj`, invisible to Godot (`.gdignore`); `scripts/` Node CLI shortcuts
 - `config.tres` the `GameConfig` instance; `GlobalUsings.cs` global usings
@@ -39,27 +29,29 @@ Empty folders hold a `.gitkeep`; delete it once the folder has content.
 
 - `Game.csproj` and `Game.slnx` stay in the project root next to `project.godot`: Godot builds from there. The assembly is `Game` (`project.godot` `[dotnet]`); rename only together with it.
 - `Game.slnx` builds `tests/Game.Tests.csproj` in `Debug` only, so exports never compile tests.
-- `Directory.Build.props`: shared properties (nullable, implicit usings, not packable; warnings as errors when `CI=true`). Don't repeat in a `.csproj` what the SDK or this file already sets.
-- `Directory.Packages.props`: every NuGet version (central package management); `PackageReference`s never carry a `Version`. Analyzers for all projects (Meziantou.Analyzer) are `GlobalPackageReference`s.
+- `Directory.Build.props`: properties shared by every project. Don't repeat in a `.csproj` what the SDK or this file already sets.
+- `Directory.Packages.props`: every NuGet version (central package management); `PackageReference`s never carry a `Version`. Analyzers for every project are `GlobalPackageReference`s there.
 - `TargetFramework` stays in each `.csproj`: Godot reads `Game.csproj` directly and inserts its own if it's missing. Keep both projects on the same version.
 - The Godot SDK version lives on `Game.csproj`'s `Sdk` attribute; the editor manages it.
-- `global.json` pins the .NET SDK band and runs `dotnet test` on Microsoft.Testing.Platform.
+- `global.json` pins the .NET SDK and the test platform.
 
 ## Architecture
 
-- **Autoloads** are registered by UID in `project.godot`. Reach them only via `AutoloadExtension` (`this.GetSaveManager()`); its `/root/<Name>` paths must match the autoload names. Use the `/add-autoload` skill to add one.
+- **Autoloads** are registered in `project.godot` under their type name (`GetAutoload<T>` throws otherwise). Reach them only with `this.GetAutoload<T>()`. Use the `/add-autoload` skill to add one.
 - **Config**: `this.GetConfig()` returns `GameConfig` from `res://config.tres`. New setting: `[Export]` property in an `[ExportGroup]`, value in `config.tres`.
 - **SignalBus**: global `[Signal]`s. Emit with `SignalName.X`, subscribe with `+=`, unsubscribe in `_ExitTree`.
-- **SaveManager**: `SaveData` (`core/data/save/`) as encrypted JSON per slot at `user://savedata/save_NNN.save`. Edit `Data`, then `Save()`. New state: a section class in its own folder under `core/data/save/`, added to `SaveData` as a property initialised with `new()`. Writes go through a `.tmp`/`.old` swap that the next access recovers after a crash; unreadable slots are renamed `_BROKEN_<time>`, never deleted. Only `storage/file_system/GodotEncryptedFileSystem` calls Godot; test the rest (`SaveStore`, `FileSaveStorage`) with the fakes in `tests/fakes/`.
+- **SaveManager**: persists `SaveData` (`core/data/save/`) per slot. Edit `Data`, then `Save()`. New state: a section class in its own folder under `core/data/save/`, added to `SaveData` as a property initialised with `new()`. Writes stay crash-safe, and unreadable saves are set aside, never deleted. Only the Godot adapter under `storage/` touches the engine; test the rest with the fakes in `tests/fakes/`.
 - **UIHolder**: one full-rect layer per `UILayer` value, higher on top. Values must stay contiguous from 0.
 - **GameLocale**: the first autoload. Its constructor sets the process culture to `GameLocale.Culture` (invariant); Godot constructs autoloads in listed order, so this runs before any other game code. Tests don't run it, so always pass the culture explicitly.
 
 ## Engineering
 
-- Fix the class, not the instance. Before fixing a failure, name the kind of failure it is and search for other places it happens. Prefer a fix that makes the whole kind impossible (types, one source of truth, a check at the boundary, a test) over a patch where it failed. If the general fix is out of scope, make the local one and say what the general one would be.
-- Record principles, not observations. Docs, comments, rules and memories state the lasting rule and its reason ("pin X, or Y picks its own"), never today's value ("Y picks 8"). Test: would this still be true after the next upgrade?
-- One source of truth for every fact (versions, paths, names, defaults). Read it from the source or point to the source; never copy it. Tool versions live in `README.md`.
-- No special cases. A one-off `if`, a hardcoded name or a copied value means a general mechanism is missing: extend the existing one or build it. Generalize only along the axis the failure showed. A speculative abstraction is slop too.
+- Every fact has one owner: code, config or a single doc. Everything else derives it or points to it. A copy kept in sync by hand is a defect that rots silently: a value, a list of names, a path, a summary of a file's contents or a "must match" rule.
+- Enforce invariants mechanically (types, derivation, a test, a check in `npm run check`), not with prose asking people to keep things in sync. One guard per invariant, where the fact is used. A second check needs a failure the first one misses that actually matters.
+- Fix the class, not the instance. Before fixing anything, name the general kind of failure, search for its other symptoms and fix at the level that removes the kind. If that's out of scope, fix locally and say what the general fix would be.
+- Write lessons as the rule that caused the failure, with its reason, never as the failure you saw. Test: does it stay true if the specifics change?
+- An example in feedback illustrates a class. Generalize from it; don't limit the fix to it.
+- Generalize only along axes the evidence shows. A speculative abstraction is slop too.
 
 ## Always
 
@@ -74,10 +66,4 @@ Topic rules in `.claude/rules/` load when you touch matching files: `csharp.md`,
 
 ## Skills
 
-| Skill                      | Invoked by     | Use for                                                              |
-| :------------------------- | :------------- | :------------------------------------------------------------------- |
-| `/add-scene <path> [Type]` | Claude or user | Any new scene + script. Never hand-write a `.tscn`.                  |
-| `/add-autoload`            | Claude or user | A new global singleton, with its `project.godot` entry and accessor. |
-| `/godot-review [scope]`    | Claude or user | Reviewing Godot C# changes for engine bugs and perf traps.           |
-| `/new-game "<Name>"`       | User only      | Turning a fresh clone of the template into a game. Run once.         |
-| `/upgrade-godot <version>` | User only      | Moving to a new Godot (and .NET) version.                            |
+Skills in `.claude/skills/` own their workflows: use one whenever it covers the task. Any new scene goes through `/add-scene`; never hand-write a `.tscn`.

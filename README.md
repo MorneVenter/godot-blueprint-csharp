@@ -122,16 +122,16 @@ Empty folders contain a `.gitkeep` so Git keeps them; delete it once the folder 
 
 ## Core Systems
 
-All of these are autoloads registered in `project.godot`. Reach them from any node through an extension method:
+All of these are autoloads registered in `project.godot` under their class name. Reach any of them from a node with `this.GetAutoload<T>()`, e.g. `this.GetAutoload<SaveManager>()`. It throws if `T` isn't a registered autoload or the node isn't in the tree.
 
-| Autoload      | Access                  | Purpose                                                            |
-| :------------ | :---------------------- | :----------------------------------------------------------------- |
-| `SaveManager` | `this.GetSaveManager()` | Encrypted save slots.                                              |
-| `SignalBus`   | `this.GetSignalBus()`   | Global signals between unrelated nodes.                            |
-| `UIHolder`    | `this.GetUIHolder()`    | Layered container for all UI.                                      |
-| `FpsCounter`  | `this.GetFpsCounter()`  | FPS label. Set `ShowFps` in `config.tres`, or call `Toggle(bool)`. |
+| Autoload      | Purpose                                                            |
+| :------------ | :----------------------------------------------------------------- |
+| `SaveManager` | Encrypted save slots.                                              |
+| `SignalBus`   | Global signals between unrelated nodes.                            |
+| `UIHolder`    | Layered container for all UI.                                      |
+| `FpsCounter`  | FPS label. Set `ShowFps` in `config.tres`, or call `Toggle(bool)`. |
 
-Don't need one? Delete its folder, its line in `project.godot` (`[autoload]`) and its accessor in `AutoloadExtension.cs`.
+Don't need one? Delete its folder and its line in `project.godot` (`[autoload]`).
 
 `GameLocale` is also an autoload, listed first so it runs before everything else; see [Locale](#locale).
 
@@ -140,7 +140,7 @@ Don't need one? Delete its folder, its line in `project.godot` (`[autoload]`) an
 Saves a `SaveData` object (`core/data/save/SaveData.cs`) as encrypted JSON, one file per slot (`user://savedata/save_001.save`). Slot 1 is loaded on startup. Edit `Data` in memory, then call `Save()` to write it. Deleting the loaded slot unloads it; call `LoadSave` before saving again.
 
 ```csharp
-var saveManager = this.GetSaveManager();
+var saveManager = this.GetAutoload<SaveManager>();
 
 saveManager.Data.Player.TutorialCompleted = true;
 saveManager.Save();
@@ -200,13 +200,13 @@ public delegate void ScoreChangedEventHandler(int score);
 Emit and listen from anywhere:
 
 ```csharp
-this.GetSignalBus().EmitSignal(SignalBus.SignalName.ScoreChanged, 10);
+this.GetAutoload<SignalBus>().EmitSignal(SignalBus.SignalName.ScoreChanged, 10);
 ```
 
 ```csharp
-public override void _Ready() => this.GetSignalBus().ScoreChanged += OnScoreChanged;
+public override void _Ready() => this.GetAutoload<SignalBus>().ScoreChanged += OnScoreChanged;
 
-public override void _ExitTree() => this.GetSignalBus().ScoreChanged -= OnScoreChanged;
+public override void _ExitTree() => this.GetAutoload<SignalBus>().ScoreChanged -= OnScoreChanged;
 ```
 
 **Always unsubscribe in `_ExitTree`.** Godot doesn't disconnect custom signals for you, so a freed node that's still subscribed causes errors.
@@ -216,7 +216,7 @@ public override void _ExitTree() => this.GetSignalBus().ScoreChanged -= OnScoreC
 A full-screen container with one layer per `UIHolder.UILayer`, drawn back to front: `WorldBackground`, `WorldForeground`, `Hud`, `Menu`, `MenuOverlay`.
 
 ```csharp
-var uiHolder = this.GetUIHolder();
+var uiHolder = this.GetAutoload<UIHolder>();
 
 uiHolder.Add(pauseMenu, UIHolder.UILayer.Menu);         // adds it, or moves it if it has a parent
 uiHolder.ToggleVisible(UIHolder.UILayer.Hud, false);    // hide a whole layer

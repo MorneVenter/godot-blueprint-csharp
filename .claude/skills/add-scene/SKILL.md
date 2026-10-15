@@ -24,6 +24,6 @@ Then:
 
 1. Implement the script. Prefer `[Export]` properties for child nodes and tunables over `GetNode` string paths.
 2. Add child nodes in the editor where possible. If hand-editing the `.tscn`, follow `.claude/rules/godot-files.md`.
-3. UI scenes: root is a `Control`; show them via `this.GetUIHolder().Add(instance, UIHolder.UILayer.<Layer>)`.
+3. UI scenes: root is a `Control`; show them via `this.GetAutoload<UIHolder>().Add(instance, UIHolder.UILayer.<Layer>)`.
 4. Reference the scene by its `uid://` (shown in the output), not its path.
 5. Run `npm run check`, then `npm run smoke -- --scene <uid>` to load the new scene directly.

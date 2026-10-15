@@ -31,7 +31,7 @@ Scope: $ARGUMENTS. If empty, review `git diff HEAD` plus untracked `.cs`/`.tscn`
 - No work every frame that only needs to happen on change: use a signal or setter.
 
 **References**
-- No string node paths where an `[Export]` node or `%UniqueName` works. No `/root/...` outside `AutoloadExtension`.
+- No string node paths where an `[Export]` node or `%UniqueName` works. No `/root/...` paths: autoloads via `this.GetAutoload<T>()`.
 - Input actions, groups, animation names and other strings are constants, not literals.
 - Scenes and resources referenced by `uid://`, not `res://` paths.
 - Exported node references are null-checked or validated in `_Ready`.
