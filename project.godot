@@ -21,7 +21,6 @@ config/icon="res://icon.png"
 
 [autoload]
 
-GameLocale="*uid://cn6q7ejo32t3f"
 FpsCounter="*uid://c5uyymg5ddoce"
 SaveManager="*uid://utwfaywa0i1"
 SignalBus="*uid://df5aal2e3djlm"

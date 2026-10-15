@@ -6,20 +6,28 @@ namespace Game.Tests.Core.Utilities;
 public class PrettyNumbersTests
 {
     [Test]
-    [TestCase(float.NaN, "0")]
-    [TestCase(100f, "100")]
-    [TestCase(-100f, "-100")]
-    [TestCase(999f, "999")]
-    [TestCase(1000f, "1K")]
-    [TestCase(1200f, "1.2K")]
-    [TestCase(-1200f, "-1.2K")]
-    [TestCase(150000f, "150K")]
-    [TestCase(999_949f, "999.9K")]
-    [TestCase(999_999f, "1M")]
-    [TestCase(-999_999f, "-1M")]
-    [TestCase(1600000f, "1.6M")]
-    [TestCase(-1600000f, "-1.6M")]
-    public static void NumbersShouldFormatCorrectly(float number, string result)
+    [TestCase(double.NaN, "0")]
+    [TestCase(double.PositiveInfinity, "0")]
+    [TestCase(-0.04, "0")]
+    [TestCase(0.1 + 0.2, "0.3")]
+    [TestCase(12.34, "12.3")]
+    [TestCase(100, "100")]
+    [TestCase(-100, "-100")]
+    [TestCase(999, "999")]
+    [TestCase(999.96, "1K")]
+    [TestCase(1000, "1K")]
+    [TestCase(1200, "1.2K")]
+    [TestCase(-1200, "-1.2K")]
+    [TestCase(150_000, "150K")]
+    [TestCase(999_949, "999.9K")]
+    [TestCase(999_999, "1M")]
+    [TestCase(-999_999, "-1M")]
+    [TestCase(1_600_000, "1.6M")]
+    [TestCase(-1_600_000, "-1.6M")]
+    [TestCase(999_999_999, "1B")]
+    [TestCase(2_500_000_000, "2.5B")]
+    [TestCase(1.5e12, "1500B")]
+    public static void FormatsWithSuffix(double number, string result)
     {
         Assert.That(PrettyNumbers.Format(number), Is.EqualTo(result));
     }
@@ -28,6 +36,6 @@ public class PrettyNumbersTests
     [SetCulture("en-ZA")]
     public static void FormattingIgnoresSystemCulture()
     {
-        Assert.That(PrettyNumbers.Format(1200f), Is.EqualTo("1.2K"));
+        Assert.That(PrettyNumbers.Format(1200), Is.EqualTo("1.2K"));
     }
 }

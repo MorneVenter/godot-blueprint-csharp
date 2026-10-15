@@ -9,8 +9,83 @@ indent_size = 2
 
 [*.cs]
 indent_size = 4
+
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:warning
+csharp_style_var_elsewhere = true:warning
+dotnet_diagnostic.IDE0007.severity = warning
+
+# The project prefers var; IDE0008 asks for explicit types.
 dotnet_diagnostic.IDE0008.severity = none
-dotnet_diagnostic.IDE0058.severity = none
+
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
+dotnet_diagnostic.IDE0040.severity = warning
+
+csharp_preferred_modifier_order = public,private,protected,internal,file,new,virtual,abstract,sealed,override,static,extern,readonly,unsafe,required,volatile,async:warning
+dotnet_diagnostic.IDE0036.severity = warning
+
+dotnet_diagnostic.IDE0005.severity = warning
+
+csharp_style_namespace_declarations = file_scoped:warning
+dotnet_diagnostic.IDE0161.severity = warning
+
+csharp_style_implicit_object_creation_when_type_is_apparent = true:warning
+dotnet_diagnostic.IDE0090.severity = warning
+
+dotnet_style_parentheses_in_arithmetic_binary_operators = never_if_unnecessary:warning
+dotnet_style_parentheses_in_relational_binary_operators = never_if_unnecessary:warning
+dotnet_style_parentheses_in_other_binary_operators = never_if_unnecessary:warning
+dotnet_style_parentheses_in_other_operators = never_if_unnecessary:warning
+dotnet_diagnostic.IDE0047.severity = warning
+
+dotnet_style_null_propagation = true:warning
+dotnet_diagnostic.IDE0031.severity = warning
+dotnet_style_object_initializer = true:warning
+dotnet_diagnostic.IDE0017.severity = warning
+dotnet_style_collection_initializer = true:warning
+dotnet_diagnostic.IDE0028.severity = warning
+
+dotnet_diagnostic.CA1805.severity = warning
+
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+dotnet_naming_style.camel_case.capitalization = camel_case
+dotnet_naming_style.underscore_camel_case.capitalization = camel_case
+dotnet_naming_style.underscore_camel_case.required_prefix = _
+dotnet_naming_style.interface.capitalization = pascal_case
+dotnet_naming_style.interface.required_prefix = I
+
+dotnet_naming_symbols.constants.applicable_kinds = field, local
+dotnet_naming_symbols.constants.required_modifiers = const
+dotnet_naming_symbols.static_readonly_fields.applicable_kinds = field
+dotnet_naming_symbols.static_readonly_fields.required_modifiers = static, readonly
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_symbols.types_and_members.applicable_kinds = class, struct, enum, delegate, method, property, event, local_function
+dotnet_naming_symbols.locals_and_parameters.applicable_kinds = local, parameter
+
+dotnet_naming_rule.constants.symbols = constants
+dotnet_naming_rule.constants.style = pascal_case
+dotnet_naming_rule.constants.severity = warning
+dotnet_naming_rule.static_readonly_fields.symbols = static_readonly_fields
+dotnet_naming_rule.static_readonly_fields.style = pascal_case
+dotnet_naming_rule.static_readonly_fields.severity = warning
+dotnet_naming_rule.private_fields.symbols = private_fields
+dotnet_naming_rule.private_fields.style = underscore_camel_case
+dotnet_naming_rule.private_fields.severity = warning
+dotnet_naming_rule.interfaces.symbols = interfaces
+dotnet_naming_rule.interfaces.style = interface
+dotnet_naming_rule.interfaces.severity = warning
+dotnet_naming_rule.types_and_members.symbols = types_and_members
+dotnet_naming_rule.types_and_members.style = pascal_case
+dotnet_naming_rule.types_and_members.severity = warning
+dotnet_naming_rule.locals_and_parameters.symbols = locals_and_parameters
+dotnet_naming_rule.locals_and_parameters.style = camel_case
+dotnet_naming_rule.locals_and_parameters.severity = warning
+dotnet_diagnostic.IDE1006.severity = warning
+
+# Game.dll is the game's entry assembly: GameLocale sets the culture before any game code runs.
+dotnet_diagnostic.CA2255.severity = none
 
 # Namespaces mirror folders, so SaveManager lives in Game.Core.Managers.SaveManager by design.
 dotnet_diagnostic.MA0049.severity = none

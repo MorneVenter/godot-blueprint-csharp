@@ -1,6 +1,5 @@
 # Godot caches
 /.godot/
-/.import/
 /android/
 
 # .NET

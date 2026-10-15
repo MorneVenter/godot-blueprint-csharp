@@ -56,9 +56,9 @@ public partial class UIHolder : Node
             Detach(uiItem, parent);
     }
 
-    public void ToggleVisible(UILayer layer, bool value)
+    public void SetLayerVisible(UILayer layer, bool visible)
     {
-        _layers[layer].Visible = value;
+        _layers[layer].Visible = visible;
     }
 
     private static void Detach(Control uiItem, Node parent)

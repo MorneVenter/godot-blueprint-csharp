@@ -2,17 +2,13 @@ using FileAccess = Godot.FileAccess;
 
 namespace Game.Core.Managers.SaveManager.Storage.FileSystem;
 
-public sealed class GodotEncryptedFileSystem(string encryptionKey) : IFileSystem
+public sealed class GodotFileSystem(string encryptionKey) : IFileSystem
 {
     public bool Exists(string path) => FileAccess.FileExists(path);
 
     public string Read(string path)
     {
-        using var file = FileAccess.OpenEncryptedWithPass(
-            path,
-            FileAccess.ModeFlags.Read,
-            encryptionKey
-        );
+        using var file = Open(path, FileAccess.ModeFlags.Read);
 
         if (file is not null)
             return file.GetAsText();
@@ -31,7 +27,7 @@ public sealed class GodotEncryptedFileSystem(string encryptionKey) : IFileSystem
         ThrowOnError(DirAccess.MakeDirRecursiveAbsolute(folder), $"create folder '{folder}'");
 
         using var file =
-            FileAccess.OpenEncryptedWithPass(path, FileAccess.ModeFlags.Write, encryptionKey)
+            Open(path, FileAccess.ModeFlags.Write)
             ?? throw new IOException($"Could not write '{path}': {FileAccess.GetOpenError()}");
 
         if (!file.StoreString(contents))
@@ -45,6 +41,11 @@ public sealed class GodotEncryptedFileSystem(string encryptionKey) : IFileSystem
 
     public void Delete(string path) =>
         ThrowOnError(DirAccess.RemoveAbsolute(path), $"delete '{path}'");
+
+    private FileAccess? Open(string path, FileAccess.ModeFlags mode) =>
+        encryptionKey.Length == 0
+            ? FileAccess.Open(path, mode)
+            : FileAccess.OpenEncryptedWithPass(path, mode, encryptionKey);
 
     private static void ThrowOnError(Error error, string action)
     {

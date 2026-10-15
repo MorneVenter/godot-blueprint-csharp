@@ -2,32 +2,28 @@ namespace Game.Core.Utilities;
 
 public static class PrettyNumbers
 {
-    private const double Thousand = 1_000;
-    private const double Million = 1_000_000;
+    private const double Step = 1_000;
     private const int Decimals = 1;
-    private const string ThousandSuffix = "K";
-    private const string MillionSuffix = "M";
+
+    private static readonly string[] Suffixes = ["", "K", "M", "B"];
 
     public static string Format(double number)
     {
-        if (double.IsNaN(number))
+        if (!double.IsFinite(number))
             number = 0;
 
         var magnitude = Math.Abs(number);
+        var tier = 0;
+        var scaled = Math.Round(magnitude, Decimals);
 
-        if (magnitude < Thousand)
-            return number.ToString(GameLocale.Culture);
+        while (scaled >= Step && tier < Suffixes.Length - 1)
+        {
+            tier++;
+            scaled = Math.Round(magnitude / Math.Pow(Step, tier), Decimals);
+        }
 
-        var thousands = Math.Round(magnitude / Thousand, Decimals);
+        var value = scaled == 0 ? 0 : Math.CopySign(scaled, number);
 
-        return thousands < Thousand
-            ? WithSuffix(Math.CopySign(thousands, number), ThousandSuffix)
-            : WithSuffix(
-                Math.CopySign(Math.Round(magnitude / Million, Decimals), number),
-                MillionSuffix
-            );
+        return string.Create(GameLocale.Culture, $"{value}{Suffixes[tier]}");
     }
-
-    private static string WithSuffix(double value, string suffix) =>
-        string.Create(GameLocale.Culture, $"{value}{suffix}");
 }

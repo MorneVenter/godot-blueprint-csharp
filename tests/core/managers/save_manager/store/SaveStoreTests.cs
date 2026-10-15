@@ -1,3 +1,6 @@
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
+using Game.Core.Managers.SaveManager.Serialization;
 using Game.Core.Managers.SaveManager.Store;
 using Game.Tests.Fakes;
 
@@ -8,14 +11,16 @@ public class SaveStoreTests
 {
     private const int Slot = 1;
     private const int OtherSlot = 2;
-    private const string Name = "Ada";
-    private const string Scene = "res://scenes/Main.tscn";
+    private const string SavedValue = "Ada";
 
     private static readonly DateTimeOffset Now = new(2026, 1, 2, 3, 4, 5, TimeSpan.Zero);
+    private static readonly JsonTypeInfo<SaveFile<TestData>> TypeInfo =
+        (JsonTypeInfo<SaveFile<TestData>>)
+            JsonSerializerOptions.Default.GetTypeInfo(typeof(SaveFile<TestData>));
 
     private InMemorySaveStorage _storage = null!;
     private FixedTimeProvider _time = null!;
-    private SaveStore _store = null!;
+    private SaveStore<TestData> _store = null!;
 
     [SetUp]
     public void SetUp()
@@ -25,7 +30,7 @@ public class SaveStoreTests
         _store = CreateStore();
     }
 
-    private SaveStore CreateStore() => new(_storage, _time);
+    private SaveStore<TestData> CreateStore() => new(_storage, _time, TypeInfo);
 
     [Test]
     public void NothingIsLoadedInitially()
@@ -48,7 +53,7 @@ public class SaveStoreTests
         {
             Assert.That(result, Is.EqualTo(SaveLoadResult.New));
             Assert.That(_store.Slot, Is.EqualTo(Slot));
-            Assert.That(_store.Data.Player.Name, Is.Empty);
+            Assert.That(_store.Data.Value, Is.Empty);
             Assert.That(_store.LastWriteTime, Is.Null);
             Assert.That(_storage.Slots, Is.Empty);
         });
@@ -84,10 +89,7 @@ public class SaveStoreTests
     public void SavedDataReloadsInANewStore()
     {
         _store.LoadSave(Slot);
-        var player = _store.Data.Player;
-        player.Name = Name;
-        player.CurrentScene = Scene;
-        player.TutorialCompleted = true;
+        _store.Data.Value = SavedValue;
         _store.Save();
 
         var reloaded = CreateStore();
@@ -96,9 +98,7 @@ public class SaveStoreTests
         Assert.Multiple(() =>
         {
             Assert.That(result, Is.EqualTo(SaveLoadResult.Loaded));
-            Assert.That(reloaded.Data.Player.Name, Is.EqualTo(Name));
-            Assert.That(reloaded.Data.Player.CurrentScene, Is.EqualTo(Scene));
-            Assert.That(reloaded.Data.Player.TutorialCompleted, Is.True);
+            Assert.That(reloaded.Data.Value, Is.EqualTo(SavedValue));
             Assert.That(reloaded.LastWriteTime, Is.EqualTo(Now));
         });
     }
@@ -107,16 +107,16 @@ public class SaveStoreTests
     public void DataStaysTheSameObjectAcrossSaves()
     {
         _store.LoadSave(Slot);
-        var player = _store.Data.Player;
+        var data = _store.Data;
 
         _store.Save();
-        player.Name = Name;
+        data.Value = SavedValue;
         _store.Save();
 
         var reloaded = CreateStore();
         reloaded.LoadSave(Slot);
 
-        Assert.That(reloaded.Data.Player.Name, Is.EqualTo(Name));
+        Assert.That(reloaded.Data.Value, Is.EqualTo(SavedValue));
     }
 
     [Test]
@@ -124,11 +124,11 @@ public class SaveStoreTests
     {
         _store.LoadSave(Slot);
         _store.Save();
-        _store.Data.Player.Name = Name;
+        _store.Data.Value = SavedValue;
 
         _store.LoadSave(Slot);
 
-        Assert.That(_store.Data.Player.Name, Is.Empty);
+        Assert.That(_store.Data.Value, Is.Empty);
     }
 
     [Test]
@@ -176,7 +176,7 @@ public class SaveStoreTests
         {
             Assert.That(_store.Slot, Is.EqualTo(OtherSlot));
             Assert.That(_store.Data, Is.Not.SameAs(firstData));
-            Assert.That(_store.Data.Player.Name, Is.Empty);
+            Assert.That(_store.Data.Value, Is.Empty);
             Assert.That(_store.LastWriteTime, Is.Null);
         });
     }
@@ -244,18 +244,17 @@ public class SaveStoreTests
     [Test]
     public void SavesWithUnknownFieldsStillLoad()
     {
-        _storage.Slots[Slot] =
-            """{"Removed":1,"Data":{"OldSection":{},"Player":{"Name":"Ada","Old":true}}}""";
+        _storage.Slots[Slot] = """{"Removed":1,"Data":{"OldSection":{},"Value":"Ada"}}""";
 
         _store.LoadSave(Slot);
 
-        Assert.That(_store.Data.Player.Name, Is.EqualTo(Name));
+        Assert.That(_store.Data.Value, Is.EqualTo(SavedValue));
     }
 
     [Test]
     [TestCase("{}")]
     [TestCase("""{"Data":{}}""")]
-    public void MissingSectionsLoadWithDefaults(string contents)
+    public void MissingFieldsLoadWithDefaults(string contents)
     {
         _storage.Slots[Slot] = contents;
 
@@ -263,8 +262,7 @@ public class SaveStoreTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(_store.Data.Player.Name, Is.Empty);
-            Assert.That(_store.Data.Player.TutorialCompleted, Is.False);
+            Assert.That(_store.Data.Value, Is.Empty);
             Assert.That(_store.LastWriteTime, Is.Null);
         });
     }
@@ -274,8 +272,7 @@ public class SaveStoreTests
     [TestCase("not json")]
     [TestCase("null")]
     [TestCase("""{"Data":null}""")]
-    [TestCase("""{"Data":{"Player":null}}""")]
-    [TestCase("""{"Data":{"Player":{"Name":null}}}""")]
+    [TestCase("""{"Data":[]}""")]
     [TestCase("""{"LastWriteTime":"yesterday"}""")]
     public void InvalidSavesAreSetAsideAndTheSlotStartsEmpty(string contents)
     {
@@ -288,7 +285,7 @@ public class SaveStoreTests
             Assert.That(result, Is.EqualTo(SaveLoadResult.BrokenSetAside));
             Assert.That(_storage.SetAside, Is.EqualTo(new[] { (Slot, contents, Now) }));
             Assert.That(_store.Slot, Is.EqualTo(Slot));
-            Assert.That(_store.Data.Player.Name, Is.Empty);
+            Assert.That(_store.Data.Value, Is.Empty);
             Assert.That(_store.LastWriteTime, Is.Null);
             Assert.That(_store.SaveExists(Slot), Is.False);
         });
@@ -315,7 +312,7 @@ public class SaveStoreTests
         _storage.Slots[Slot] = "not json";
         _store.LoadSave(Slot);
 
-        _store.Data.Player.Name = Name;
+        _store.Data.Value = SavedValue;
         _store.Save();
 
         var reloaded = CreateStore();
@@ -323,7 +320,7 @@ public class SaveStoreTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(reloaded.Data.Player.Name, Is.EqualTo(Name));
+            Assert.That(reloaded.Data.Value, Is.EqualTo(SavedValue));
             Assert.That(_storage.SetAside.Single().Contents, Is.EqualTo("not json"));
         });
     }
@@ -342,5 +339,10 @@ public class SaveStoreTests
             Assert.That(_storage.Slots, Does.ContainKey(Slot));
             Assert.That(_store.Slot, Is.EqualTo(OtherSlot));
         });
+    }
+
+    public sealed class TestData
+    {
+        public string Value { get; set; } = string.Empty;
     }
 }

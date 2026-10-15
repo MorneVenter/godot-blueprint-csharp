@@ -1,13 +1,12 @@
-using Game.Core.Data.Save;
-
 namespace Game.Core.Managers.SaveManager.Serialization;
 
 /// <summary>
-/// What is written to disk: the game's <see cref="SaveData"/> plus metadata the save system owns.
+/// What is written to disk: the game's data plus metadata the save system owns.
 /// </summary>
-internal sealed record SaveFile
+public sealed record SaveFile<TData>
+    where TData : class, new()
 {
     public DateTimeOffset? LastWriteTime { get; set; }
 
-    public SaveData Data { get; set; } = new();
+    public TData Data { get; set; } = new();
 }

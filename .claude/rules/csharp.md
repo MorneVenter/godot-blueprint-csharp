@@ -9,17 +9,9 @@ Godot C# style guide, with project overrides marked.
 
 ## Language
 
-- C# at the version in `README.md` (project override: newer than the guide targets). Nullable reference types on. CI treats warnings as errors, so keep local builds at 0 warnings.
-- Meziantou.Analyzer runs on every project (NUnit.Analyzers on tests). Fix what it reports. If a rule conflicts with a project convention, set its severity in `.editorconfig` with a one-line reason; never `#pragma` or `[SuppressMessage]`.
+- C# at the version in `README.md` (project override: newer than the guide targets). Nullable reference types on.
+- Meziantou.Analyzer (NUnit.Analyzers on tests) and the style and naming rules in `.editorconfig` run on every build, and `npm run check` fails on any warning. Fix what they report. If a rule conflicts with a project convention, set its severity in `.editorconfig` with a one-line reason; never `#pragma` or `[SuppressMessage]`.
 - Implicit usings plus `GlobalUsings.cs`. `Godot.Collections` is not global: add `using Godot.Collections;` only where engine collections are needed.
-
-## Formatting
-
-CSharpier owns layout: Allman braces, 4-space indent, ~100 columns, operator and comma spacing. Beyond that:
-
-- LF, UTF-8 without BOM, one trailing newline.
-- Blank line after `using`s, between members, and between groups of related fields.
-- No blank line after `{`, before `}`, after a comment, or next to another blank line.
 
 ## Naming
 
@@ -47,12 +39,10 @@ Group files into folders by concern. Never pile a system's files into one flat f
 ## Code
 
 - `var` everywhere (project override), except numeric literals where `float`/`double` matters: `float speed = 5f`.
-- Explicit access modifiers. Properties, not non-private fields.
-- Modifier order: access, `virtual`/`override`/`abstract`/`new`, `static`, `readonly`.
+- Properties, not non-private fields.
 - Declare locals close to first use. Don't make a field of something only one method uses.
 - Never fully qualify a type: add a `using`, or a `using` alias on a clash (`using FileAccess = Godot.FileAccess;`). No `this.` unless required (extension calls like `this.GetConfig()`).
-- Remove unused `using`s and redundant parentheses. Omit default initial values.
-- `as` when the type may differ, direct cast when it can't. Use `?.` and initializers to stay compact.
+- `as` when the type may differ, direct cast when it can't.
 - No magic numbers or strings: named constants in one place. At most 5 parameters.
 
 ## Godot

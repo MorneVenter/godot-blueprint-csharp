@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -5,7 +6,6 @@ import { parseArgs } from "node:util";
 import { fail, ROOT, runGodot } from "../lib/godot.mjs";
 
 const USAGE = "usage: npm run new:scene -- <scenes/feature/Name.tscn> [--type Node2D]";
-const ROOT_NAMESPACE = "Game";
 const SET_UID_SCRIPT = fileURLToPath(new URL("set_uid.gd", import.meta.url));
 const PASCAL_CASE = /^[A-Z][A-Za-z0-9]*$/;
 const SNAKE_CASE = /^[a-z][a-z0-9_]*$/;
@@ -40,7 +40,12 @@ const toPascal = (folder) =>
     .map((part) => part[0].toUpperCase() + part.slice(1))
     .join("");
 
-const namespace = [ROOT_NAMESPACE, ...folders.map(toPascal)].join(".");
+const assemblyName = readFileSync(resolve(ROOT, "project.godot"), "utf8").match(
+  /^project\/assembly_name="(.+)"$/m,
+)?.[1];
+if (!assemblyName) fail("project.godot has no [dotnet] project/assembly_name.");
+
+const namespace = [assemblyName, ...folders.map(toPascal)].join(".");
 const resPath = (path) => `res://${relative(ROOT, path).split(sep).join("/")}`;
 const uidFile = `${scriptPath}.uid`;
 
@@ -73,7 +78,7 @@ writeFileSync(
 
 [ext_resource type="Script" uid="${scriptUid}" path="${resPath(scriptPath)}" id="1_script"]
 
-[node name="${name}" type="${values.type}"]
+[node name="${name}" type="${values.type}" unique_id=${randomInt(1, 2 ** 31)}]
 script = ExtResource("1_script")
 `,
 );

@@ -12,7 +12,7 @@ public partial class FpsCounter : CanvasLayer
         Layer = (int)RenderingServer.CanvasLayerMax;
         ProcessMode = ProcessModeEnum.Always;
         AddChild(_label);
-        Toggle(this.GetConfig().ShowFps);
+        SetEnabled(this.GetConfig().ShowFps);
     }
 
     public override void _Process(double delta)
@@ -26,7 +26,7 @@ public partial class FpsCounter : CanvasLayer
         _label.Text = string.Create(GameLocale.Culture, $"{fps:F1} FPS");
     }
 
-    public void Toggle(bool enabled)
+    public void SetEnabled(bool enabled)
     {
         Visible = enabled;
         _shownFps = double.NaN;

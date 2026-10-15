@@ -1,18 +1,14 @@
 using Game.Core.Data.Save;
+using Game.Core.Managers.SaveManager.Serialization;
 using Game.Core.Managers.SaveManager.Storage;
 using Game.Core.Managers.SaveManager.Storage.FileSystem;
 using Game.Core.Managers.SaveManager.Store;
 
 namespace Game.Core.Managers.SaveManager;
 
-/// <summary>
-/// Autoload exposing <see cref="SaveStore"/> backed by encrypted files.
-/// </summary>
 public partial class SaveManager : Node
 {
-    private const int DefaultSlot = 1;
-
-    private SaveStore? _store;
+    private SaveStore<SaveData>? _store;
 
     public int? Slot => Store.Slot;
 
@@ -20,19 +16,22 @@ public partial class SaveManager : Node
 
     public DateTimeOffset? LastWriteTime => Store.LastWriteTime;
 
-    private SaveStore Store =>
+    private SaveStore<SaveData> Store =>
         _store ?? throw new InvalidOperationException("SaveManager has not entered the tree.");
 
     public override void _EnterTree()
     {
-        var fileSystem = new GodotEncryptedFileSystem(this.GetConfig().SaveFileEncryptionKey);
-        _store = new SaveStore(new FileSaveStorage(fileSystem), TimeProvider.System);
-        LoadSave(DefaultSlot);
+        var fileSystem = new GodotFileSystem(this.GetConfig().SaveFileEncryptionKey);
+        _store = new SaveStore<SaveData>(
+            new FileSaveStorage(fileSystem),
+            TimeProvider.System,
+            SaveJsonContext.Default.SaveFileSaveData
+        );
     }
 
     public bool SaveExists(int slot) => Store.SaveExists(slot);
 
-    /// <inheritdoc cref="SaveStore.LoadSave"/>
+    /// <inheritdoc cref="SaveStore{TData}.LoadSave"/>
     public SaveLoadResult LoadSave(int slot)
     {
         var result = Store.LoadSave(slot);
@@ -45,9 +44,9 @@ public partial class SaveManager : Node
         return result;
     }
 
-    /// <inheritdoc cref="SaveStore.Save"/>
+    /// <inheritdoc cref="SaveStore{TData}.Save"/>
     public void Save() => Store.Save();
 
-    /// <inheritdoc cref="SaveStore.DeleteSave"/>
+    /// <inheritdoc cref="SaveStore{TData}.DeleteSave"/>
     public void DeleteSave(int slot) => Store.DeleteSave(slot);
 }

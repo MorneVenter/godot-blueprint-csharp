@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Godot Mono template in C# / .NET; versions are in `README.md` (Requirements). It bootstraps future games: keep it small, generic and reusable. Nothing game-specific belongs here.
+Godot Mono template in C# / .NET; versions and the folder layout are in `README.md` (Requirements, Project Structure). It bootstraps future games: keep it small, generic and reusable. Nothing game-specific belongs here.
 
 ## Commands
 
@@ -11,26 +11,12 @@ Commands are npm scripts in `package.json`, documented in `README.md`. For agent
 
 Godot comes from `GODOT_BIN` (env or git-ignored `.env`); scripts error out if it's unset. Never hardcode an install path. CI (`.github/workflows/`) has no Godot, so smoke only runs locally.
 
-## Layout
-
-- `core/configuration/` game-wide configuration
-- `core/extensions/` `Node` extension methods
-- `core/data/` plain data classes; save data nests one folder per section under `save/`
-- `core/managers/` autoloads, one folder each
-- `core/utilities/` pure static helpers; `core/resources/` custom resources
-- `scenes/` scenes + scripts by feature; the entry scene is `run/main_scene` in `project.godot`
-- `assets/` own assets; `assets/external/` third-party (licenses alongside)
-- `tests/` separate NUnit project `Game.Tests.csproj`, invisible to Godot (`.gdignore`); `scripts/` Node CLI shortcuts
-- `config.tres` the `GameConfig` instance; `GlobalUsings.cs` global usings
-
-Empty folders hold a `.gitkeep`; delete it once the folder has content.
-
 ## Build
 
 - `Game.csproj` and `Game.slnx` stay in the project root next to `project.godot`: Godot builds from there. The assembly is `Game` (`project.godot` `[dotnet]`); rename only together with it.
 - `Game.slnx` builds `tests/Game.Tests.csproj` in `Debug` only, so exports never compile tests.
 - `Directory.Build.props`: properties shared by every project. Don't repeat in a `.csproj` what the SDK or this file already sets.
-- `Directory.Packages.props`: every NuGet version (central package management); `PackageReference`s never carry a `Version`. Analyzers for every project are `GlobalPackageReference`s there.
+- `Directory.Packages.props`: every NuGet version (central package management); `PackageReference`s never carry a `Version`. Test packages are referenced only from `Game.Tests.csproj`, never `Game.csproj`. Analyzers for every project are `GlobalPackageReference`s there.
 - `TargetFramework` stays in each `.csproj`: Godot reads `Game.csproj` directly and inserts its own if it's missing. Keep both projects on the same version.
 - The Godot SDK version lives on `Game.csproj`'s `Sdk` attribute; the editor manages it.
 - `global.json` pins the .NET SDK and the test platform.
@@ -38,11 +24,11 @@ Empty folders hold a `.gitkeep`; delete it once the folder has content.
 ## Architecture
 
 - **Autoloads** are registered in `project.godot` under their type name (`GetAutoload<T>` throws otherwise). Reach them only with `this.GetAutoload<T>()`. Use the `/add-autoload` skill to add one.
-- **Config**: `this.GetConfig()` returns `GameConfig` from `res://config.tres`. New setting: `[Export]` property in an `[ExportGroup]`, value in `config.tres`.
+- **Config**: `this.GetConfig()` returns the `GameConfig` in `config.tres`. New setting: `[Export]` property in the `[ExportGroup]` named after the system that owns it, value in `config.tres`.
 - **SignalBus**: global `[Signal]`s. Emit with `SignalName.X`, subscribe with `+=`, unsubscribe in `_ExitTree`.
-- **SaveManager**: persists `SaveData` (`core/data/save/`) per slot. Edit `Data`, then `Save()`. New state: a section, per the doc comment on `SaveData`. Writes stay crash-safe, and unreadable saves are set aside, never deleted. Only the Godot adapter under `storage/` touches the engine; test the rest with the fakes in `tests/fakes/`.
+- **SaveManager**: persists `SaveData` (`core/data/save/`) per slot. `LoadSave(slot)`, edit `Data`, then `Save()`. New state: a section, per the doc comment on `SaveData`. Writes stay crash-safe, and unreadable saves are set aside, never deleted. Only the Godot adapter under `storage/` touches the engine; test the rest with the fakes in `tests/fakes/`.
 - **UIHolder**: one `CanvasLayer` per `UILayer` value; the value is its `Layer`. Moving or unparenting an item re-arms its `_Ready`.
-- **GameLocale**: the first autoload. Its constructor sets the process culture to `GameLocale.Culture` (invariant); Godot constructs autoloads in listed order, so this runs before any other game code. Tests don't run it, so always pass the culture explicitly.
+- **GameLocale**: a module initializer sets the process culture to `GameLocale.Culture` (invariant) before any game code runs.
 
 ## Engineering
 
@@ -56,13 +42,9 @@ Empty folders hold a `.gitkeep`; delete it once the folder has content.
 ## Always
 
 - Never rely on the system culture: `GameLocale.Culture` for anything shown to players, `CultureInfo.InvariantCulture` for anything saved or machine-read (file names, save data).
-- Commit `.uid` and `.import` files but never write them by hand: create the file, then `npm run import`. Move them with their file. Of Godot's generated files, only the `.godot/` and `.import/` cache folders are ignored.
+- `.uid` and `.import` files: `.claude/rules/godot-files.md`. Any new scene goes through `/add-scene`; never hand-write a `.tscn`.
 - Group files into folders by concern, never one flat folder per system: an entry point on top, a subfolder per part (`save_manager/{store,storage,serialization}/`). Details in `csharp.md`.
 - Keep `README.md` in sync when changing public APIs, settings or commands.
-- A hook runs CSharpier on every edited `.cs`/`.csproj`/`.props`; don't format by hand.
+- A hook runs CSharpier on every edited C# or MSBuild file; don't format by hand.
 
 Rules in `.claude/rules/` load when you touch files matching their `paths`; those without `paths` always load.
-
-## Skills
-
-Skills in `.claude/skills/` own their workflows: use one whenever it covers the task. Any new scene goes through `/add-scene`; never hand-write a `.tscn`.

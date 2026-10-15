@@ -2,25 +2,13 @@
 
 A starter template for Godot 4 games written in C#. It gives you a working project structure, a few core systems (saving, global signals, layered UI, config), tests, CI, cross-platform CLI shortcuts and a Claude Code setup, so a new game starts at gameplay instead of plumbing.
 
-## Software Kit
-
-![Blender](https://img.shields.io/badge/blender-%23F5792A.svg?style=for-the-badge&logo=blender&logoColor=white)
-![Godot Engine](https://img.shields.io/badge/GODOT-%23FFFFFF.svg?style=for-the-badge&logo=godot-engine)
-![Visual Studio Code](https://img.shields.io/badge/Visual%20Studio%20Code-0078d7.svg?style=for-the-badge&logo=visual-studio-code&logoColor=white)
-![Vim](https://img.shields.io/badge/VIM-%2311AB00.svg?style=for-the-badge&logo=vim&logoColor=white)
-![Audacity](https://img.shields.io/badge/Audacity-0000CC?style=for-the-badge&logo=audacity&logoColor=white)
-![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white)
-![Gimp Gnu Image Manipulation Program](https://img.shields.io/badge/Gimp-657D8B?style=for-the-badge&logo=gimp&logoColor=FFFFFF)
-![Aseprite](https://img.shields.io/badge/Aseprite-FFFFFF?style=for-the-badge&logo=Aseprite&logoColor=#7D929E)
-
 ## Requirements
 
-| Name                | Version |                          Link                           |
-| :------------------ | :------ | :-----------------------------------------------------: |
-| Godot Mono (.NET)   | 4.7.2   |      [Download](https://godotengine.org/download)       |
-| .NET SDK            | 10.0    | [Download](https://dotnet.microsoft.com/en-us/download) |
-| Node.js             | 20.12+  |       [Download](https://nodejs.org/en/download)        |
-| Zed (or any editor) | 1.0+    |          [Download](https://zed.dev/download)           |
+| Name              | Version |                          Link                           |
+| :---------------- | :------ | :-----------------------------------------------------: |
+| Godot Mono (.NET) | 4.7.2   |      [Download](https://godotengine.org/download)       |
+| .NET SDK          | 10.0    | [Download](https://dotnet.microsoft.com/en-us/download) |
+| Node.js           | 20.12+  |       [Download](https://nodejs.org/en/download)        |
 
 Get the **.NET** build of Godot, not the standard one: C# only works there.
 
@@ -48,11 +36,7 @@ Useful reading: [Godot docs](https://docs.godotengine.org/en/stable/) and [C# in
    npm run check         # format check, build, tests and a headless run
    ```
 
-4. **Make it your game.** With [Claude Code](https://claude.com/claude-code), run `/new-game "My Game"`. Otherwise, by hand:
-   - Set the name in `project.godot` (`config/name`) and `package.json`, and add `config/version="0.1.0"`.
-   - **Set your own `SaveFileEncryptionKey` in `config.tres`.** The template default is public.
-   - Delete `SampleSignal` from `SignalBus`.
-   - Add your copyright line to `LICENSE`, and update this README and `CLAUDE.md`.
+4. **Make it your game.** With [Claude Code](https://claude.com/claude-code), run `/new-game "My Game"`. Without it, follow the steps in `.claude/skills/new-game/SKILL.md` by hand. Don't skip the step that sets your own `SaveFileEncryptionKey`: the template default is public.
 
 5. **Open it in Godot:** Project Manager > Import > select `project.godot`. Press F5 to run, or `npm start` from a terminal.
 
@@ -63,8 +47,9 @@ Useful reading: [Godot docs](https://docs.godotengine.org/en/stable/) and [C# in
 | `npm start`                               | Run the game.                                                                                                                    |
 | `npm start -- res://scenes/levels/X.tscn` | Run a single scene.                                                                                                              |
 | `npm run new:scene -- <path> --type <T>`  | Create a scene and its C# script, e.g. `scenes/player/Player.tscn --type CharacterBody2D`.                                       |
-| `npm run check`                           | Format check, build, tests and smoke run. Run before every commit.                                                               |
+| `npm run check`                           | Format check, build (warnings fail it), tests and smoke run. Run before every commit.                                            |
 | `npm run build`                           | Build the C# code.                                                                                                               |
+| `npm run restore`                         | Restore NuGet packages without building.                                                                                         |
 | `npm test`                                | Run the unit tests.                                                                                                              |
 | `npm run format`                          | Format all C# with CSharpier. `format:check` only reports.                                                                       |
 | `npm run smoke`                           | Run the game headless for 120 frames; fails on any error. `--frames N`, `--scene <path or uid>`.                                 |
@@ -113,6 +98,7 @@ npm run export -- "macOS" builds/macos/MyGame.zip --debug
 | `tests/`                   | The unit test project (see [Tests](#tests)).                            |
 | `scripts/`                 | The CLI shortcuts.                                                      |
 | `config.tres`              | Your project settings (see [Configuration](#configuration)).            |
+| `GlobalUsings.cs`          | Namespaces imported in every C# file of the game.                       |
 | `Game.csproj`, `Game.slnx` | The C# project and solution. Godot needs both in the project root.      |
 | `Directory.Build.props`    | Build settings shared by all projects (nullable, implicit usings).      |
 | `Directory.Packages.props` | Every NuGet package version, in one place.                              |
@@ -122,31 +108,30 @@ Empty folders contain a `.gitkeep` so Git keeps them; delete it once the folder 
 
 ## Core Systems
 
-All of these are autoloads registered in `project.godot` under their class name. Reach any of them from a node with `this.GetAutoload<T>()`, e.g. `this.GetAutoload<SaveManager>()`. It throws if `T` isn't a registered autoload or the node isn't in the tree.
+All of these are autoloads registered in `project.godot` under their class name. Reach any of them from a node with `this.GetAutoload<T>()` (`using Game.Core.Extensions.AutoloadExtension;`), e.g. `this.GetAutoload<SaveManager>()`. It throws if `T` isn't a registered autoload or the node isn't in the tree.
 
-| Autoload      | Purpose                                                            |
-| :------------ | :----------------------------------------------------------------- |
-| `SaveManager` | Encrypted save slots.                                              |
-| `SignalBus`   | Global signals between unrelated nodes.                            |
-| `UIHolder`    | Layered container for all UI.                                      |
-| `FpsCounter`  | FPS label. Set `ShowFps` in `config.tres`, or call `Toggle(bool)`. |
+| Autoload      | Purpose                                                                |
+| :------------ | :--------------------------------------------------------------------- |
+| `SaveManager` | Save slots, optionally encrypted.                                      |
+| `SignalBus`   | Global signals between unrelated nodes.                                |
+| `UIHolder`    | Layered container for all UI.                                          |
+| `FpsCounter`  | FPS label. Set `ShowFps` in `config.tres`, or call `SetEnabled(bool)`. |
 
-Don't need one? Delete its folder and its line in `project.godot` (`[autoload]`).
-
-`GameLocale` is also an autoload, listed first so it runs before everything else; see [Locale](#locale).
+Don't need one? Delete its folder, its line in `project.godot` (`[autoload]`), its export group in `GameConfig.cs` with the values in `config.tres`, and its tests under the same path in `tests/`. `SaveManager` also owns `core/data/save/`.
 
 ### SaveManager
 
-Saves a `SaveData` object (`core/data/save/SaveData.cs`) as encrypted JSON, one file per slot (`user://savedata/save_001.save`). Slot 1 is loaded on startup. Edit `Data` in memory, then call `Save()` to write it. Deleting the loaded slot unloads it; call `LoadSave` before saving again.
+Saves a `SaveData` object (`core/data/save/SaveData.cs`) as JSON, one file per slot (`user://savedata/save_001.save`). Nothing is loaded on startup: call `LoadSave(slot)` before using `Data`. Edit `Data` in memory, then call `Save()` to write it. Deleting the loaded slot unloads it; call `LoadSave` before saving again.
 
 ```csharp
 var saveManager = this.GetAutoload<SaveManager>();
 
+saveManager.LoadSave(1); // Loaded, New or BrokenSetAside
 saveManager.Data.Player.TutorialCompleted = true;
 saveManager.Save();
 
 var hasSecondSlot = saveManager.SaveExists(2); // without loading it
-var result = saveManager.LoadSave(2); // switch slots: Loaded, New or BrokenSetAside
+saveManager.LoadSave(2); // switch slots
 saveManager.DeleteSave(2);
 var lastSaved = saveManager.LastWriteTime; // UTC; null if never saved
 ```
@@ -172,13 +157,11 @@ Unknown fields are ignored and missing ones keep their defaults; enums are saved
 
 `Data` and its sections stay the same objects across `Save()`. `LoadSave` replaces them, so don't keep references across slot switches.
 
-Saves are protected against crashes and bad files:
+Files are encrypted with `SaveFileEncryptionKey` in `config.tres`. Leave it empty to write plain JSON you can read and edit, for example while developing or for a moddable game. Changing the key, or switching between empty and set, makes existing saves unreadable, so they get set aside.
 
-- **Crash-safe writes.** A save is written to `save_001.save.tmp` first. The old save is then renamed to `.old`, the `.tmp` file is renamed into place, and `.old` is deleted. The next time the slot is accessed, any leftover files are cleaned up, leaving either the old save or the new one.
-- **Verified writes.** Godot writes encrypted files on close and doesn't report errors there, for example a full disk. Each `.tmp` file is read back and compared before it replaces the save.
-- **Broken saves are set aside, not deleted.** If a slot can't be read (corrupt, wrong encryption key, invalid JSON), it is renamed to `save_001_BROKEN_<UTC time>.save`. The slot then starts empty, `LoadSave` returns `BrokenSetAside` and a warning is logged. To recover a broken save, rename it back to `save_001.save`.
+A crash or a failed write never corrupts a save: the slot always holds either the old save or the new one. A save that can't be read is renamed to `save_001_BROKEN_<UTC time>.save`, the slot starts empty and `LoadSave` returns `BrokenSetAside`; rename the file back to recover it.
 
-Only `GodotEncryptedFileSystem` calls Godot; the rest of the save system runs without the engine and is unit tested.
+Only `GodotFileSystem` calls Godot; the rest of the save system runs without the engine and is unit tested.
 
 ### SignalBus
 
@@ -211,7 +194,7 @@ One `CanvasLayer` per `UIHolder.UILayer` value, higher values on top. The `World
 var uiHolder = this.GetAutoload<UIHolder>();
 
 uiHolder.Add(pauseMenu, UIHolder.UILayer.Menu);         // adds it, or moves it if it has a parent
-uiHolder.ToggleVisible(UIHolder.UILayer.Hud, false);    // hide a whole layer
+uiHolder.SetLayerVisible(UIHolder.UILayer.Hud, false);  // hide a whole layer
 uiHolder.Unparent(pauseMenu);                           // take it out without freeing it
 ```
 
@@ -221,14 +204,13 @@ uiHolder.Unparent(pauseMenu);                           // take it out without f
 
 ### Locale
 
-`GameLocale` is the first autoload and makes C# format numbers and dates the same on every machine, whatever the player's system language. Without it, `1.5` prints as `1,5` on some systems. It uses the invariant culture by default; change `GameLocale.Culture` to pick another. Saved data and file names always use the invariant culture, so changing it never breaks existing saves.
+`GameLocale` sets the culture before any game code runs, so C# formats numbers and dates the same on every machine, whatever the player's system language. Without it, `1.5` prints as `1,5` on some systems. It uses the invariant culture by default; change `GameLocale.Culture` to pick another. Saved data and file names always use the invariant culture, so changing it never breaks existing saves.
 
 For translated text, use Godot's [localization](https://docs.godotengine.org/en/stable/tutorials/i18n/internationalizing_games.html) system.
 
 ### Utilities
 
-- `PrettyNumbers.Format(1200)` returns `"1.2K"`; also `M` for millions.
-- `RotationHelper.LerpRotation(from, to, weight)` interpolates rotations per axis, taking the shortest way around.
+`PrettyNumbers.Format(1200)` returns `"1.2K"`, with `M` for millions and `B` for billions, rounded to one decimal.
 
 ## Tests
 
@@ -246,22 +228,7 @@ To add a package, put its version in `Directory.Packages.props` and a `<PackageR
 
 ## Code Style
 
-The project follows the [Godot C# style guide](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_style_guide.html), with C# 14. CSharpier does all formatting: run `npm run format`. [Meziantou.Analyzer](https://github.com/meziantou/Meziantou.Analyzer) checks every build for bugs and bad practices; rules that clash with our conventions are configured in `.editorconfig`. The essentials:
-
-| What                                                       | Style                   | Example                     |
-| :--------------------------------------------------------- | :---------------------- | :-------------------------- |
-| Classes, methods, properties, constants, enums, namespaces | PascalCase              | `MaxHealth`, `SpawnEnemy()` |
-| Local variables and parameters                             | camelCase               | `targetPosition`            |
-| Private fields                                             | `_camelCase`            | `_currentHealth`            |
-| Signals                                                    | `...EventHandler`       | `HealthChangedEventHandler` |
-| Folders                                                    | snake_case              | `save_manager/`             |
-| Files                                                      | Named after their class | `SaveManager.cs`            |
-
-- Two-letter acronyms stay uppercase (`UIHolder`); longer ones are words (`FpsCounter`).
-- Expose data through properties, not public fields.
-- No magic numbers or strings: give them a named constant.
-- Comment only what the code can't say itself.
-- Files use LF line endings and UTF-8 without BOM.
+The project follows the [Godot C# style guide](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_style_guide.html), with C# 14. CSharpier does all formatting: run `npm run format`. [Meziantou.Analyzer](https://github.com/meziantou/Meziantou.Analyzer) checks every build for bugs and bad practices; the style and naming rules in `.editorconfig` run on every build too. The conventions, including the naming table, are in [`.claude/rules/csharp.md`](.claude/rules/csharp.md).
 
 ## Working with Claude Code
 

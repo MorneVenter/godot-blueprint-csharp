@@ -10,7 +10,7 @@
 		"clean": "node scripts/build/clean.mjs",
 		"restore": "dotnet restore Game.slnx",
 		"build": "dotnet build Game.slnx",
-		"build:godot": "node scripts/build/godot.mjs",
+		"build:godot": "node scripts/build/godot-build.mjs",
 		"test": "dotnet test --solution Game.slnx",
 		"smoke": "node scripts/run/smoke.mjs",
 		"format": "dotnet csharpier format .",
@@ -20,6 +20,6 @@
 		"new:scene": "node scripts/project/new-scene.mjs",
 		"import": "node scripts/project/import.mjs",
 		"export": "node scripts/build/export.mjs",
-		"check": "npm run format:check && npm run build && npm test -- --no-build && npm run smoke"
+		"check": "npm run format:check && npm run build -- -warnaserror && npm test -- --no-build && npm run smoke"
 	}
 }

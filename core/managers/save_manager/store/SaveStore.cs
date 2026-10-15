@@ -1,20 +1,25 @@
-using Game.Core.Data.Save;
+using System.Text.Json.Serialization.Metadata;
 using Game.Core.Managers.SaveManager.Serialization;
 using Game.Core.Managers.SaveManager.Storage;
 
 namespace Game.Core.Managers.SaveManager.Store;
 
-public sealed class SaveStore(ISaveStorage storage, TimeProvider timeProvider)
+public sealed class SaveStore<TData>(
+    ISaveStorage storage,
+    TimeProvider timeProvider,
+    JsonTypeInfo<SaveFile<TData>> typeInfo
+)
+    where TData : class, new()
 {
-    private (int Slot, SaveFile File)? _loaded;
+    private (int Slot, SaveFile<TData> File)? _loaded;
 
     public int? Slot => _loaded?.Slot;
 
-    public SaveData Data => LoadedFile.Data;
+    public TData Data => LoadedFile.Data;
 
     public DateTimeOffset? LastWriteTime => LoadedFile.LastWriteTime;
 
-    private SaveFile LoadedFile => (_loaded ?? throw NotLoaded()).File;
+    private SaveFile<TData> LoadedFile => (_loaded ?? throw NotLoaded()).File;
 
     public bool SaveExists(int slot)
     {
@@ -33,7 +38,7 @@ public sealed class SaveStore(ISaveStorage storage, TimeProvider timeProvider)
 
         var (file, result) = storage.Exists(slot)
             ? ReadOrSetAside(slot)
-            : (new SaveFile(), SaveLoadResult.New);
+            : (new SaveFile<TData>(), SaveLoadResult.New);
 
         _loaded = (slot, file);
 
@@ -48,7 +53,7 @@ public sealed class SaveStore(ISaveStorage storage, TimeProvider timeProvider)
         var (slot, file) = _loaded ?? throw NotLoaded();
         var saved = file with { LastWriteTime = timeProvider.GetUtcNow() };
 
-        storage.Write(slot, SaveSerializer.Serialize(saved));
+        storage.Write(slot, SaveSerializer.Serialize(saved, typeInfo));
         _loaded = (slot, saved);
     }
 
@@ -65,17 +70,20 @@ public sealed class SaveStore(ISaveStorage storage, TimeProvider timeProvider)
             _loaded = null;
     }
 
-    private (SaveFile File, SaveLoadResult Result) ReadOrSetAside(int slot)
+    private (SaveFile<TData> File, SaveLoadResult Result) ReadOrSetAside(int slot)
     {
         try
         {
-            return (SaveSerializer.Deserialize(storage.Read(slot)), SaveLoadResult.Loaded);
+            return (
+                SaveSerializer.Deserialize(storage.Read(slot), typeInfo),
+                SaveLoadResult.Loaded
+            );
         }
         catch (InvalidDataException)
         {
             storage.SetAsideBroken(slot, timeProvider.GetUtcNow());
 
-            return (new SaveFile(), SaveLoadResult.BrokenSetAside);
+            return (new SaveFile<TData>(), SaveLoadResult.BrokenSetAside);
         }
     }
 

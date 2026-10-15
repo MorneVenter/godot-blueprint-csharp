@@ -4,11 +4,11 @@ namespace Game.Core.Extensions.GameConfigExtension;
 
 public static class GameConfigExtension
 {
-    private const string ConfigPath = "res://config.tres";
+    private const string ConfigUid = "uid://baclkaals8cyx";
 
     public static GameConfig GetConfig(this Node node) =>
-        GD.Load<GameConfig>(ConfigPath)
+        GD.Load<GameConfig>(ConfigUid)
         ?? throw new InvalidOperationException(
-            $"Failed to load configuration resource: {ConfigPath}"
+            $"Failed to load configuration resource: {ConfigUid}"
         );
 }
