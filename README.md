@@ -213,25 +213,19 @@ public override void _ExitTree() => this.GetAutoload<SignalBus>().ScoreChanged -
 
 ### UIHolder
 
-A full-screen container with one layer per `UIHolder.UILayer`, drawn back to front: `WorldBackground`, `WorldForeground`, `Hud`, `Menu`, `MenuOverlay`.
+One `CanvasLayer` per `UIHolder.UILayer` value, higher values on top. The `World` layers follow the camera; the rest stay fixed on screen.
 
 ```csharp
 var uiHolder = this.GetAutoload<UIHolder>();
 
 uiHolder.Add(pauseMenu, UIHolder.UILayer.Menu);         // adds it, or moves it if it has a parent
 uiHolder.ToggleVisible(UIHolder.UILayer.Hud, false);    // hide a whole layer
-uiHolder.Unparent(pauseMenu, UIHolder.UILayer.Menu);    // take it out without freeing it
-UIHolder.Remove(pauseMenu);                             // free it
+uiHolder.Unparent(pauseMenu);                           // take it out without freeing it
 ```
 
 ### Configuration
 
 `config.tres` holds project-wide settings. Edit it in the Godot inspector and read it in code with `this.GetConfig()`. To add a setting, add an `[Export]` property to `core/configuration/game_config/GameConfig.cs`.
-
-| Setting                 | Template value  | Purpose                                           |
-| :---------------------- | :-------------- | :------------------------------------------------ |
-| `ShowFps`               | `true`          | Show the FPS counter.                             |
-| `SaveFileEncryptionKey` | `some_key_here` | Encrypts save files. **Change it for your game.** |
 
 ### Locale
 

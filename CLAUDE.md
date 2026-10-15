@@ -41,7 +41,7 @@ Empty folders hold a `.gitkeep`; delete it once the folder has content.
 - **Config**: `this.GetConfig()` returns `GameConfig` from `res://config.tres`. New setting: `[Export]` property in an `[ExportGroup]`, value in `config.tres`.
 - **SignalBus**: global `[Signal]`s. Emit with `SignalName.X`, subscribe with `+=`, unsubscribe in `_ExitTree`.
 - **SaveManager**: persists `SaveData` (`core/data/save/`) per slot. Edit `Data`, then `Save()`. New state: a section class in its own folder under `core/data/save/`, added to `SaveData` as a property initialised with `new()`. Writes stay crash-safe, and unreadable saves are set aside, never deleted. Only the Godot adapter under `storage/` touches the engine; test the rest with the fakes in `tests/fakes/`.
-- **UIHolder**: one full-rect layer per `UILayer` value, higher on top. Values must stay contiguous from 0.
+- **UIHolder**: one `CanvasLayer` per `UILayer` value; the value is its `Layer`. Moving or unparenting an item re-arms its `_Ready`.
 - **GameLocale**: the first autoload. Its constructor sets the process culture to `GameLocale.Culture` (invariant); Godot constructs autoloads in listed order, so this runs before any other game code. Tests don't run it, so always pass the culture explicitly.
 
 ## Engineering

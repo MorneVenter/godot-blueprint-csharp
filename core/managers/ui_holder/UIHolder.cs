@@ -1,37 +1,31 @@
 namespace Game.Core.Managers.UIHolder;
 
-public partial class UIHolder : Control
+public partial class UIHolder : Node
 {
     public enum UILayer
     {
-        WorldBackground = 0,
-        WorldForeground = 1,
-        Hud = 2,
-        Menu = 3,
-        MenuOverlay = 4,
+        WorldBackground = 1,
+        WorldForeground = 2,
+        Hud = 3,
+        Menu = 4,
+        MenuOverlay = 5,
     }
 
-    private readonly List<Control> _uiLayers = [];
+    private readonly Dictionary<UILayer, CanvasLayer> _layers = [];
 
     public override void _Ready()
     {
-        SetAnchorsPreset(LayoutPreset.FullRect);
-
         foreach (var layer in Enum.GetValues<UILayer>())
         {
-            var zIndex = (int)layer + 1;
-
-            var control = new Control
+            var canvasLayer = new CanvasLayer
             {
-                Name = $"UILayer{zIndex}",
-                ZIndex = zIndex,
-                MouseFilter = MouseFilterEnum.Pass,
+                Name = layer.ToString(),
+                Layer = (int)layer,
+                FollowViewportEnabled = layer is UILayer.WorldBackground or UILayer.WorldForeground,
             };
 
-            control.SetAnchorsPreset(LayoutPreset.FullRect);
-
-            AddChild(control);
-            _uiLayers.Add(control);
+            AddChild(canvasLayer);
+            _layers.Add(layer, canvasLayer);
         }
     }
 
@@ -40,46 +34,36 @@ public partial class UIHolder : Control
     /// </summary>
     public void Add(Control uiItem, UILayer layer)
     {
-        var layerControl = GetLayer(layer);
+        var target = _layers[layer];
         var parent = uiItem.GetParent();
 
-        if (parent == layerControl)
+        if (parent == target)
             return;
 
-        if (parent is null)
-            layerControl.AddChild(uiItem);
-        else
-            uiItem.Reparent(layerControl);
+        if (parent is not null)
+            Detach(uiItem, parent);
+
+        target.AddChild(uiItem);
     }
 
-    public static void Remove(Control uiItem)
+    public void Unparent(Control uiItem)
     {
-        uiItem.QueueFree();
-    }
-
-    public void Unparent(Control uiItem, UILayer layer)
-    {
-        var layerControl = GetLayer(layer);
-
-        if (!IsInstanceValid(uiItem) || uiItem.GetParent() != layerControl)
-            return;
-
-        layerControl.RemoveChild(uiItem);
-        uiItem.RequestReady();
+        if (
+            IsInstanceValid(uiItem)
+            && uiItem.GetParent() is CanvasLayer parent
+            && parent.GetParent() == this
+        )
+            Detach(uiItem, parent);
     }
 
     public void ToggleVisible(UILayer layer, bool value)
     {
-        GetLayer(layer).Visible = value;
+        _layers[layer].Visible = value;
     }
 
-    private Control GetLayer(UILayer layer)
+    private static void Detach(Control uiItem, Node parent)
     {
-        var index = (int)layer;
-
-        if (index < 0 || index >= _uiLayers.Count)
-            throw new ArgumentOutOfRangeException(nameof(layer), layer, "Invalid UI layer.");
-
-        return _uiLayers[index];
+        parent.RemoveChild(uiItem);
+        uiItem.RequestReady();
     }
 }
