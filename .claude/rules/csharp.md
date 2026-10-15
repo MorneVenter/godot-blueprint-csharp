@@ -33,7 +33,7 @@ CSharpier owns layout: Allman braces, 4-space indent, ~100 columns, operator and
 
 - Two-letter acronyms are uppercase in PascalCase (`UIHolder`), lowercase in camelCase (`uiLayer`). Longer ones are words (`FpsCounter`). `Id` isn't an acronym.
 - Descriptive names, no abbreviations, no type prefixes (`strName`, `fSpeed`).
-- Namespace mirrors the folder in PascalCase: `core/managers/save_manager/SaveManager.cs` → `Game.Core.Managers.SaveManager`, class `SaveManager`. The repetition in the full name is fine because types are never fully qualified.
+- Namespace mirrors the folder in PascalCase: `core/managers/save_manager/SaveManager.cs` is namespace `Game.Core.Managers.SaveManager`, class `SaveManager`. The repetition in the full name is fine because types are never fully qualified.
 - Folders `snake_case`; one class per file, file named after it. Godot scripts under `core/` get their own folder: `foo_bar/FooBar.cs`.
 
 ## Folders

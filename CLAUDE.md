@@ -55,14 +55,13 @@ Empty folders hold a `.gitkeep`; delete it once the folder has content.
 
 ## Always
 
-- Comments: the reader is an advanced developer fluent in C# and Godot. Add one only if deleting it would lead that reader into a mistake: an engine quirk, a workaround, a constraint the code can't show. Never explain an idiom (caching, null guards, `static readonly`, LINQ), and never justify the change you just made; that goes in your reply or the commit message. When in doubt, leave it out. Before finishing, reread every comment you added against this.
 - Never rely on the system culture: `GameLocale.Culture` for anything shown to players, `CultureInfo.InvariantCulture` for anything saved or machine-read (file names, save data).
 - Commit `.uid` and `.import` files but never write them by hand: create the file, then `npm run import`. Move them with their file. Of Godot's generated files, only the `.godot/` and `.import/` cache folders are ignored.
 - Group files into folders by concern, never one flat folder per system: an entry point on top, a subfolder per part (`save_manager/{store,storage,serialization}/`). Details in `csharp.md`.
 - Keep `README.md` in sync when changing public APIs, settings or commands.
 - A hook runs CSharpier on every edited `.cs`/`.csproj`/`.props`; don't format by hand.
 
-Topic rules in `.claude/rules/` load when you touch matching files: `csharp.md`, `godot-files.md`, `tests.md`, `scripts.md`.
+Rules in `.claude/rules/` load when you touch files matching their `paths`; those without `paths` always load.
 
 ## Skills
 

@@ -282,7 +282,7 @@ The project follows the [Godot C# style guide](https://docs.godotengine.org/en/s
 The project is set up for [Claude Code](https://claude.com/claude-code):
 
 - `CLAUDE.md` gives Claude the project overview and rules.
-- `.claude/rules/` holds detailed conventions that load only when Claude works on matching files.
+- `.claude/rules/` holds detailed conventions. Most load only when Claude works on matching files.
 - A hook formats every C# file Claude edits, and safe commands like build and test run without permission prompts.
 
 Skills you can run:
@@ -293,4 +293,5 @@ Skills you can run:
 | `/add-scene <path> [Type]` | Create a scene with its script and wire it up.                      |
 | `/add-autoload`            | Add a new global singleton.                                         |
 | `/godot-review`            | Review your changes for common Godot C# bugs and performance traps. |
+| `/slop-review`             | Review your changes for padded docs, needless comments and bloat.   |
 | `/upgrade-godot <version>` | Move the project to a newer Godot version.                          |

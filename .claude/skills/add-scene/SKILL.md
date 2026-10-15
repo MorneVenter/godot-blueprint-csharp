@@ -10,7 +10,7 @@ arguments: [path, type]
 Requested: path `$path`, root type `$type`. Fill in whatever is empty from the request:
 
 - path: `scenes/<feature>/<Name>.tscn`; folders snake_case, name PascalCase (`scenes/player/Player.tscn`).
-- type: the Godot root node type (`CharacterBody2D`, `Control`, `Node3D`, …); `Node` if nothing fits.
+- type: the Godot root node type (`CharacterBody2D`, `Control`, `Node3D`); `Node` if nothing fits.
 
 Never hand-write a new `.tscn`. Generate it:
 
