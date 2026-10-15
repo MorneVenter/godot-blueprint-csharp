@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Godot 4.7.2 Mono template in C# 14 / .NET 10. It bootstraps future games: keep it small, generic and reusable. Nothing game-specific belongs here.
+Godot Mono template in C# / .NET; versions are in `README.md` (Requirements). It bootstraps future games: keep it small, generic and reusable. Nothing game-specific belongs here.
 
 ## Commands
 
@@ -54,9 +54,16 @@ Empty folders hold a `.gitkeep`; delete it once the folder has content.
 - **UIHolder**: one full-rect layer per `UILayer` value, higher on top. Values must stay contiguous from 0.
 - **GameLocale**: the first autoload. Its constructor sets the process culture to `GameLocale.Culture` (invariant); Godot constructs autoloads in listed order, so this runs before any other game code. Tests don't run it, so always pass the culture explicitly.
 
+## Engineering
+
+- Fix the class, not the instance. Before fixing a failure, name the kind of failure it is and search for other places it happens. Prefer a fix that makes the whole kind impossible (types, one source of truth, a check at the boundary, a test) over a patch where it failed. If the general fix is out of scope, make the local one and say what the general one would be.
+- Record principles, not observations. Docs, comments, rules and memories state the lasting rule and its reason ("pin X, or Y picks its own"), never today's value ("Y picks 8"). Test: would this still be true after the next upgrade?
+- One source of truth for every fact (versions, paths, names, defaults). Read it from the source or point to the source; never copy it. Tool versions live in `README.md`.
+- No special cases. A one-off `if`, a hardcoded name or a copied value means a general mechanism is missing: extend the existing one or build it. Generalize only along the axis the failure showed. A speculative abstraction is slop too.
+
 ## Always
 
-- Comment only where code isn't self-documenting: a non-obvious why, a workaround, an engine quirk. Precise and short. Never restate the code, never filler.
+- Comments: the reader is an advanced developer fluent in C# and Godot. Add one only if deleting it would lead that reader into a mistake: an engine quirk, a workaround, a constraint the code can't show. Never explain an idiom (caching, null guards, `static readonly`, LINQ), and never justify the change you just made; that goes in your reply or the commit message. When in doubt, leave it out. Before finishing, reread every comment you added against this.
 - Never rely on the system culture: `GameLocale.Culture` for anything shown to players, `CultureInfo.InvariantCulture` for anything saved or machine-read (file names, save data).
 - Commit `.uid` and `.import` files but never write them by hand: create the file, then `npm run import`. Move them with their file. Of Godot's generated files, only the `.godot/` and `.import/` cache folders are ignored.
 - Group files into folders by concern, never one flat folder per system: an entry point on top, a subfolder per part (`save_manager/{store,storage,serialization}/`). Details in `csharp.md`.

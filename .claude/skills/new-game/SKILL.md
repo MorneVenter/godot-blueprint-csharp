@@ -18,6 +18,6 @@ Stop if `git status` isn't clean.
 4. `core/managers/signal_bus/SignalBus.cs`: delete `SampleSignal`.
 5. `LICENSE`: add `Copyright (c) <current year> <holder>` below `MIT License`.
 6. `README.md`: title `# $name - 0.1.0`, replace the template intro with the pitch, and remove step 4 ("Make it your game") from Getting Started and the `/new-game` row from the skills table. Keep everything else.
-7. `CLAUDE.md`: rewrite the intro as `$name: <pitch>. Godot <version> Mono, C# <version> / .NET <version>.` with the current versions. Drop the template wording ("bootstraps future games", "Nothing game-specific belongs here").
+7. `CLAUDE.md`: rewrite the intro as `$name: <pitch>. Godot Mono in C# / .NET; versions are in README.md (Requirements).` Drop the template wording ("bootstraps future games", "Nothing game-specific belongs here").
 8. Delete `.claude/skills/new-game/`: it only applies once.
 9. Run `npm run check`. Show the diff summary and offer to commit.

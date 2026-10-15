@@ -9,7 +9,7 @@ Godot C# style guide, with project overrides marked.
 
 ## Language
 
-- C# 14 (project override: the guide targets C# 12). Nullable reference types on. CI treats warnings as errors, so keep local builds at 0 warnings.
+- C# at the version in `README.md` (project override: newer than the guide targets). Nullable reference types on. CI treats warnings as errors, so keep local builds at 0 warnings.
 - Meziantou.Analyzer runs on every project (NUnit.Analyzers on tests). Fix what it reports. If a rule conflicts with a project convention, set its severity in `.editorconfig` with a one-line reason; never `#pragma` or `[SuppressMessage]`.
 - Implicit usings plus `GlobalUsings.cs`. `Godot.Collections` is not global: add `using Godot.Collections;` only where engine collections are needed.
 
